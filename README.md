@@ -38,6 +38,8 @@ Você vai precisar ter instalado em sua máquina as seguintes ferramentas:
 - [VSCode](https://code.visualstudio.com/)
 - [HeidiSQL](https://www.heidisql.com/download.php)
 
+- [PM2-installer](https://github.com/jessety/pm2-installer)
+
 ## Installation
 
 Este Gateway deverá ser instalado na mesma máquina na qual o IdSecure foi instalado:

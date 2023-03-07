@@ -21,10 +21,10 @@ export class AuthMiddleware implements NestMiddleware {
       const hmac = createHmac('SHA256', process.env.SIGNATURE).setEncoding(
         'hex',
       );
-      // if (request.headers['x-hub-signature'] !== hmac.update(request.rawBody).digest('hex')) {
-      //   this.logger.error('Signature not valid: Unauthorized');
-      //    throw new UnauthorizedException();
-      // }
+      if (request.headers['x-hub-signature'] !== hmac.update(request.rawBody).digest('hex')) {
+        this.logger.error('Signature not valid: Unauthorized');
+        throw new UnauthorizedException();
+      }
     }
     next();
   }

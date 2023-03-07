@@ -14,9 +14,6 @@ export class AppService {
     @InjectRepository(EntranceLogEntity)
     private entranceRepository: Repository<EntranceLogEntity>,
   ) {}
-  getHello(): string {
-    return 'Hello World!';
-  }
 
   saveEntranceLog(entrance: EntranceDto) {
     this.entranceRepository.save(entrance.toJson()).then(() => {

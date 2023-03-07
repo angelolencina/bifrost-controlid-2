@@ -1,8 +1,10 @@
+import { Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as https from 'https';
 import Controlid from '../interfaces/controlid-repository.interface';
 
 export class ApiControlid implements Controlid {
+  private readonly logger = new Logger('ApiControlid');
   public api: AxiosInstance;
   static baseUrl: string = process.env.CONTROLID_API || '';
   constructor() {
@@ -26,6 +28,7 @@ export class ApiControlid implements Controlid {
   }
 
   static getBearerToken = () => {
+    const _logger = new Logger('ApiControlid');
     const body = {
       username: process.env.CONTROLID_API_USER,
       password: process.env.CONTROLID_API_PASSWORD,
@@ -39,7 +42,8 @@ export class ApiControlid implements Controlid {
       .post(`${ApiControlid.baseUrl}/login`, body, config)
       .then((res) => `Bearer ${res.data.accessToken}`)
       .catch((e) => {
-        throw new Error(`Error get token controlid ${e?.message}`);
+        _logger.error(`Error when get bearer token ${e?.message}`);
+        throw new Error(`Error when get bearer token ${e?.message}`);
       });
   };
   createUserQrCode(userId: number) {
@@ -47,18 +51,18 @@ export class ApiControlid implements Controlid {
       .post(`/qrcode/userqrcode`, userId)
       .then((res) => res.data)
       .catch((e) => {
-        throw new Error(`createUserQrCode Error ${e?.message}`);
+        this.logger.error(`Error when create user qrcode ${userId} on controlId  ${e?.message}`);
       });
   }
 
   syncUser(userId: number) {
     return this.api.get(`/util/SyncUser/${userId}`).catch((e: any) => {
-      throw new Error(`createUserQrCode Error ${e?.message}`);
+      this.logger.error(`Error when sync user ${userId} on controlId  ${e?.message}`);
     });
   }
   syncAll() {
     return this.api.get(`/util/SyncAll`).catch((e: any) => {
-      throw new Error(`createUserQrCode Error ${e?.message}`);
+      this.logger.error(`Error when sync all users on controlId  ${e?.message}`);
     });
   }
 }

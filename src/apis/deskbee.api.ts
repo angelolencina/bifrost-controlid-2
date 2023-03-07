@@ -46,7 +46,7 @@ export class ApiDeskbee implements Deskbee {
       .then((res) => `Bearer ${res.data.access_token}`)
       .catch((e) => {
         throw new Error(
-          `Error get token: ${e.response.statusText} (${e.response.status})`,
+          `Error get token: ${e.message})`,
         );
       });
   };

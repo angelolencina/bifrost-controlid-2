@@ -27,7 +27,6 @@ export default class ControlidRepository
 
   updateUserAccess(booking: BookingParsedDto) {
     const bookingJson: any = booking.toJson();
-
     const dateStartLimit = booking.tolerance?.checkin_min_time
       ? formatDateToDatabase(setDateToLocal(booking.tolerance.checkin_min_time))
       : bookingJson.start_date;
@@ -93,8 +92,8 @@ export default class ControlidRepository
     return new Promise((resolve, reject) => {
       this.mysqlConnection.query(
         `SELECT u.id, u.email, u.name, l.idDevice, l.deviceName, l.reader, l.idArea, l.area, l.event, l.time as createdAt
-          FROM Logs l
-          INNER JOIN Users u ON l.idUser = u.id and u.deleted = false
+          FROM logs l
+          INNER JOIN users u ON l.idUser = u.id and u.deleted = false
           WHERE l.event = 7 and email is not null and l.time > '${lastLogDate}' order by l.time asc`,
         (err: any, results: any, fields: any) => {
           if (err) {

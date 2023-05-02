@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as https from 'https';
-import Controlid from '../interfaces/controlid-repository.interface';
+import ControlidApiInterface from '../interfaces/controlid-api.interface';
 
-export class ApiControlid implements Controlid {
+export class ApiControlid implements ControlidApiInterface {
   private readonly logger = new Logger('ApiControlid');
   public api: AxiosInstance;
   static baseUrl: string = process.env.CONTROLID_API || '';
@@ -51,18 +51,24 @@ export class ApiControlid implements Controlid {
       .post(`/qrcode/userqrcode`, userId)
       .then((res) => res.data)
       .catch((e) => {
-        this.logger.error(`Error when create user qrcode ${userId} on controlId  ${e?.message}`);
+        this.logger.error(
+          `Error when create user qrcode ${userId} on controlId  ${e?.message}`,
+        );
       });
   }
 
   syncUser(userId: number) {
     return this.api.get(`/util/SyncUser/${userId}`).catch((e: any) => {
-      this.logger.error(`Error when sync user ${userId} on controlId  ${e?.message}`);
+      this.logger.error(
+        `Error when sync user ${userId} on controlId  ${e?.message}`,
+      );
     });
   }
   syncAll() {
     return this.api.get(`/util/SyncAll`).catch((e: any) => {
-      this.logger.error(`Error when sync all users on controlId  ${e?.message}`);
+      this.logger.error(
+        `Error when sync all users on controlId  ${e?.message}`,
+      );
     });
   }
 }

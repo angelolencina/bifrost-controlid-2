@@ -8,6 +8,8 @@ import { formatDateToDatabase } from '../utils/format-date.util';
 import { getLastDayString } from '../utils/get-last-day-string.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
 import { BookingParsedDto } from '../dtos/booking-parsed.dto';
+import { PassLogsDto } from '../dtos/pass-logs.dto';
+import { UserControlidDto } from '../dtos/user-controlid.dto';
 
 @Injectable()
 export default class ControlidRepository
@@ -21,11 +23,84 @@ export default class ControlidRepository
     private entranceRepository: Repository<EntranceLogEntity>,
   ) {}
 
+  saveUserCard(userId: number, identification: string): Promise<void> {
+    const query = `
+    INSERT INTO cards (
+      idUser, idType, type, number, numberStr
+    ) VALUES (
+      '${userId}', '1', '2', '${identification}',
+      (select CONCAT(CONVERT((${identification} DIV 65536), CHAR), ",", CONVERT((${identification} MOD 65536), CHAR)))
+    )
+  `;
+    return new Promise((resolve, reject) => {
+      this.mysqlConnection.query(
+        query,
+        (err: any, results: any, fields: any) => {
+          if (err) {
+            this.logger.error(`Error saving card users: ${err.message}`);
+            reject(err);
+          }
+          resolve(results);
+        },
+      );
+    });
+  }
+  getUserByEmail(email: string): Promise<UserControlidDto> {
+    const query = `
+    SELECT id, email, name, dateLimit, dateStartLimit FROM users where deleted = 0 AND email != '' AND email = '${email}'
+  `;
+    return new Promise((resolve, reject) => {
+      this.mysqlConnection.query(
+        query,
+        (err: any, results: any, fields: any) => {
+          if (err) {
+            this.logger.error(`Error saving card users: ${err.message}`);
+            reject(err);
+          }
+          resolve(results);
+        },
+      );
+    });
+  }
+
+  getGroupIdByName?(name: string): number {
+    throw new Error('Method not implemented.');
+  }
+  blockUserAccessByGroup?(email: string, groupId: number): void {
+    throw new Error('Method not implemented.');
+  }
+  addUserToGroup(userId: number, groupId: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+  removeUserFromGroup(userId: number, groupId: number): Promise<void> {
+    throw new Error('Method not implemented.');
+  }
+
   getEntranceRecords(): void {
     throw new Error('Method not implemented.');
   }
 
-  updateUserAccess(booking: BookingParsedDto) {
+  getNewRegisteredUsers(): Promise<UserControlidDto[]> {
+    const now = new Date();
+    const lastSixMinutes = new Date(now.getTime() - 6 * 60000);
+    const query = `SELECT id, email, name, dateLimit, dateStartLimit FROM users where deleted = 0 AND email != '' AND id NOT IN (SELECT idUser FROM cards where idType = 1 AND type = 2) OR timeOfRegistration > '${lastSixMinutes}'`;
+    return new Promise((resolve, reject) => {
+      this.mysqlConnection.query(
+        query,
+        (err: any, results: any, fields: any) => {
+          if (err) {
+            this.logger.error(
+              `Error when getting new registered users: ${err.message}`,
+            );
+            reject(err);
+          }
+          resolve(results);
+        },
+      );
+    });
+  }
+
+  unblockUserAccessPerLimitDate(booking: BookingParsedDto) {
     const bookingJson: any = booking.toJson();
     const dateStartLimit = booking.tolerance?.checkin_min_time
       ? formatDateToDatabase(setDateToLocal(booking.tolerance.checkin_min_time))
@@ -53,17 +128,8 @@ export default class ControlidRepository
       );
     });
   }
-  syncUser(userId: number): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  syncAll(): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
-  createUserQrCode(userId: number): Promise<any> {
-    throw new Error('Method not implemented.');
-  }
 
-  blockUserAccess(email: string) {
+  blockUserAccessPerLimitDateByEmail(email: string) {
     const lastDay = getLastDayString();
     return new Promise((resolve, reject) => {
       this.mysqlConnection.query(
@@ -84,7 +150,7 @@ export default class ControlidRepository
     });
   }
 
-  async getUserPassLogs() {
+  async getUserPassLogs(): Promise<PassLogsDto[]> {
     const [lastLog] = await this.getLastDateLog();
     const lastLogDate = lastLog?.created_at
       ? formatDateToDatabase(setDateToLocal(new Date(lastLog.created_at)))

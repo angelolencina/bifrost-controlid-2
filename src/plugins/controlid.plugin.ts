@@ -10,7 +10,6 @@ import { IsNull, LessThan, Repository } from 'typeorm';
 import { parseBooking } from '../utils/parse-booking.util';
 import { BookingParsedDto } from '../dtos/booking-parsed.dto';
 import { MYSQL_CONTROLID_CONNECTION } from '../database/db.constants';
-import ControlidRepository from '../repositories/controlid.repository';
 import { ApiControlid } from '../apis/controlid.api';
 import { BookingEntity } from '../entities/booking.entity';
 import { AppService } from '../app.service';
@@ -19,6 +18,7 @@ import { formatDateToDatabase } from '../utils/format-date.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
 import { isToday } from '../utils/is-today.util';
 import { addDaysTodate } from '../utils/add-days-to-date';
+import ControlidRepositoryInterface from '../interfaces/controlid-repository.interface';
 
 export class ControlidPlugin implements IntegrationInterface {
   public logger = new Logger('controlidPlugin');
@@ -36,7 +36,7 @@ export class ControlidPlugin implements IntegrationInterface {
     private schedulerRegistry: SchedulerRegistry,
     @Inject(MYSQL_CONTROLID_CONNECTION)
     private readonly mysqlConnection: any,
-    private readonly controlidRepository: ControlidRepository,
+    private readonly controlidRepository: ControlidRepositoryInterface,
     private apiDeskbee: ApiDeskbee,
     private readonly apiControlid: ApiControlid,
   ) {
@@ -65,9 +65,36 @@ export class ControlidPlugin implements IntegrationInterface {
       }
     }
   }
-  
-  generateQrCode(): void {
-    throw new Error('Method not implemented.');
+
+  /*
+  idType: Representa se o tag está destinado a uma pessoa ou veículo, caso tenha o valor 1 = pessoa, caso tenha o valor 2 = veículo
+  type: Tecnologia do cartão: "0" para ASK/125kHz, "1" para Mifare e "2" para QR-Code.
+  */
+  async generateQrCode() {
+    const users = await this.controlidRepository.getNewRegisteredUsers();
+    if (!users || !users.length) {
+      this.logger.log(`eventUserQrCode : nenhum usuario`);
+      return;
+    }
+
+    const payload = <any>[];
+    for (const user of users) {
+      const code = await this.apiControlid.createUserQrCode(user.id);
+      if (!code) {
+        this.logger.log(`event: user:${user.id} code not found}`);
+        continue;
+      }
+      await this.controlidRepository.saveUserCard(user.id, code);
+      payload.push({
+        identifier_type: 'email',
+        identifier: user.email,
+        code: code,
+      });
+
+      this.apiControlid.syncUser(user.id);
+    }
+
+    this.apiDeskbee.savePersonalBadge(payload);
   }
 
   async handleAccessControl(booking: BookingParsedDto) {
@@ -75,7 +102,7 @@ export class ControlidPlugin implements IntegrationInterface {
       await this.blockUserAccess(booking.person.email);
       booking.setSync(new Date());
     } else if (isToday(new Date(booking.start_date))) {
-      await this.controlidRepository.updateUserAccess(booking);
+      await this.controlidRepository.unblockUserAccessPerLimitDate(booking);
       booking.setSync(new Date());
     }
     this.bookingRepository.upsert([booking.toJson()], ['uuid']).then(() => {
@@ -85,7 +112,7 @@ export class ControlidPlugin implements IntegrationInterface {
   }
 
   async blockUserAccess(email: string) {
-    this.controlidRepository.blockUserAccess(email);
+    await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
     this.apiControlid.syncAll();
   }
 
@@ -151,7 +178,9 @@ export class ControlidPlugin implements IntegrationInterface {
     for (const booking of bookings) {
       if (isToday(new Date(booking.start_date))) {
         const bookingParsed = BookingParsedDto.buildFromJson(booking);
-        await this.controlidRepository.updateUserAccess(bookingParsed);
+        await this.controlidRepository.unblockUserAccessPerLimitDate(
+          bookingParsed,
+        );
         bookingParsed.setSync(new Date());
         this.bookingRepository.save(bookingParsed.toJson()).then(() => {
           this.logger.log(`Booking : ${booking.uuid} Saved!`);

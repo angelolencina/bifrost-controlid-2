@@ -6,7 +6,9 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ControlidModule } from './controlid/controlid.module';
+import { AppService } from './app.service';
 import * as Joi from 'joi';
+import { ConfigurationEntity } from './entities/configuration.entity';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -76,10 +78,11 @@ import * as Joi from 'joi';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
+    TypeOrmModule.forFeature([ConfigurationEntity]),
     ControlidModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [AppService],
   exports: [TypeOrmModule],
 })
 export class AppModule {

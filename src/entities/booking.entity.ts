@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('booking')
+@Entity('bookings')
 export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -32,13 +32,13 @@ export class BookingEntity {
   @Column()
   action: string;
 
-  @Column()
+  @Column({ type: 'simple-json', nullable: true })
   person: string;
 
   @Column({ nullable: true })
   external_id: string;
 
-  @Column()
+  @Column({ type: 'simple-json', nullable: true })
   place: string;
 
   @Column({ nullable: true })

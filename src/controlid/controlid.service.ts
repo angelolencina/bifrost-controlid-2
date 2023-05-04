@@ -98,7 +98,10 @@ export class ControlidService {
       for (const log of logs) {
         this.saveEntranceLog(log);
       }
-      this.apiDeskbee.checkinByUser(logs.map((log: any) => log.toCheckinDto()));
+      const checkIns = logs.map((log: any) => log.toCheckinDto());
+      if (checkIns.length > 0) {
+        this.apiDeskbee.checkinByUser(checkIns);
+      }
     });
   }
 

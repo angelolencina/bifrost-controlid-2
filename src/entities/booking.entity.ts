@@ -35,6 +35,9 @@ export class BookingEntity {
   @Column()
   person: string;
 
+  @Column({ nullable: true })
+  external_id: string;
+
   @Column()
   place: string;
 

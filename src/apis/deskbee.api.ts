@@ -45,9 +45,7 @@ export class ApiDeskbee implements Deskbee {
       .post(`${this.baseUrl}/v1.1/oauth/token`, body, config)
       .then((res) => `Bearer ${res.data.access_token}`)
       .catch((e) => {
-        throw new Error(
-          `Error get token: ${e.message})`,
-        );
+        throw new Error(`Error get token: ${e.message})`);
       });
   };
 

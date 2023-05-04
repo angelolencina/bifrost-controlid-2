@@ -1,44 +1,44 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CronJob } from 'cron';
 import { BookingWebhookDto } from '../dtos/booking-webhook.dto';
-import IntegrationInterface from '../interfaces/integration.interface';
-import { ApiDeskbee } from '../apis/deskbee.api';
-import { IsNull, LessThan, Repository } from 'typeorm';
 import { parseBooking } from '../utils/parse-booking.util';
+import { ApiDeskbee } from '../apis/deskbee.api';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, LessThan, Repository } from 'typeorm';
 import { BookingParsedDto } from '../dtos/booking-parsed.dto';
+import { BookingEntity } from '../entities/booking.entity';
+import { isToday } from '../utils/is-today.util';
 import { MYSQL_CONTROLID_CONNECTION } from '../database/db.constants';
 import { ApiControlid } from '../apis/controlid.api';
-import { BookingEntity } from '../entities/booking.entity';
-import { AppService } from '../app.service';
+import { EntranceLogEntity } from '../entities/entrance-log.entity';
 import { EntranceDto } from '../dtos/entrance.dto';
+import ControlidRepository from '../repositories/controlid.repository';
+import { addDaysTodate } from '../utils/add-days-to-date';
 import { formatDateToDatabase } from '../utils/format-date.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
-import { isToday } from '../utils/is-today.util';
-import { addDaysTodate } from '../utils/add-days-to-date';
-import ControlidRepositoryInterface from '../interfaces/controlid-repository.interface';
+import { CronJob } from 'cron';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const { ACCESS_CONTROL, AUTOMATED_CHECKIN, GENERATE_USER_QRCODE } = process.env;
 
-export class ControlidPlugin implements IntegrationInterface {
-  public logger = new Logger('controlidPlugin');
-  public jobAccessControl: any;
-  public jobAutomatedCheckIn: any;
-  public jobGenerateQrCode: any;
-  public accessControl: boolean = process.env.ACCESS_CONTROL === 'true';
-  public automatedCheckIn: boolean = process.env.AUTOMATED_CHECKIN === 'true';
-  public generateUserQrCode: boolean =
-    process.env.GENERATE_USER_QRCODE === 'true';
+@Injectable()
+export class ControlidService {
+  public logger = new Logger('controlidService');
+  public accessControl: boolean = ACCESS_CONTROL === 'true';
+  public automatedCheckIn: boolean = AUTOMATED_CHECKIN === 'true';
+  public generateUserQrCode: boolean = GENERATE_USER_QRCODE === 'true';
   constructor(
+    private readonly controlidRepository: ControlidRepository,
+    private readonly apiDeskbee: ApiDeskbee,
+    private readonly apiControlid: ApiControlid,
+    private schedulerRegistry: SchedulerRegistry,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
-    private readonly appService: AppService,
-    private schedulerRegistry: SchedulerRegistry,
     @Inject(MYSQL_CONTROLID_CONNECTION)
     private readonly mysqlConnection: any,
-    private readonly controlidRepository: ControlidRepositoryInterface,
-    private apiDeskbee: ApiDeskbee,
-    private readonly apiControlid: ApiControlid,
+    @InjectRepository(EntranceLogEntity)
+    private entranceRepository: Repository<EntranceLogEntity>,
   ) {
     if (this.accessControl) {
       this.addCronJob('accessControl', '0');
@@ -66,37 +66,6 @@ export class ControlidPlugin implements IntegrationInterface {
     }
   }
 
-  /*
-  idType: Representa se o tag está destinado a uma pessoa ou veículo, caso tenha o valor 1 = pessoa, caso tenha o valor 2 = veículo
-  type: Tecnologia do cartão: "0" para ASK/125kHz, "1" para Mifare e "2" para QR-Code.
-  */
-  async generateQrCode() {
-    const users = await this.controlidRepository.getNewRegisteredUsers();
-    if (!users || !users.length) {
-      this.logger.log(`eventUserQrCode : nenhum usuario`);
-      return;
-    }
-
-    const payload = <any>[];
-    for (const user of users) {
-      const code = await this.apiControlid.createUserQrCode(user.id);
-      if (!code) {
-        this.logger.log(`event: user:${user.id} code not found}`);
-        continue;
-      }
-      await this.controlidRepository.saveUserCard(user.id, code);
-      payload.push({
-        identifier_type: 'email',
-        identifier: user.email,
-        code: code,
-      });
-
-      this.apiControlid.syncUser(user.id);
-    }
-
-    this.apiDeskbee.savePersonalBadge(payload);
-  }
-
   async handleAccessControl(booking: BookingParsedDto) {
     if (booking.state === 'deleted' || booking.state === 'fall') {
       await this.blockUserAccess(booking.person.email);
@@ -115,15 +84,53 @@ export class ControlidPlugin implements IntegrationInterface {
     await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
     this.apiControlid.syncAll();
   }
+  saveEntranceLog(entrance: EntranceDto) {
+    this.entranceRepository.save(entrance.toJson()).then(() => {
+      this.logger.log(
+        `Entrance ${entrance.email} on device ${entrance?.deviceName}  saved`,
+      );
+    });
+  }
 
   automateCheckIn() {
     this.controlidRepository.getUserPassLogs().then((logs: any) => {
       logs = logs.map((log: any) => new EntranceDto(log));
       for (const log of logs) {
-        this.appService.saveEntranceLog(log);
+        this.saveEntranceLog(log);
       }
       this.apiDeskbee.checkinByUser(logs.map((log: any) => log.toCheckinDto()));
     });
+  }
+
+  async checkBookingsForToday() {
+    const bookings = await this.bookingRepository.find({
+      where: {
+        sync_date: IsNull(),
+        start_date: LessThan(
+          formatDateToDatabase(
+            setDateToLocal(addDaysTodate(new Date(), 1)),
+            false,
+          ),
+        ),
+      },
+    });
+    for (const booking of bookings) {
+      if (isToday(new Date(booking.start_date))) {
+        const bookingParsed = BookingParsedDto.buildFromJson(booking);
+        await this.controlidRepository.unblockUserAccessPerLimitDate(
+          bookingParsed,
+        );
+        bookingParsed.setSync(new Date());
+        this.bookingRepository.save(bookingParsed.toJson()).then(() => {
+          this.logger.log(`Booking : ${booking.uuid} Saved!`);
+        });
+      }
+    }
+    if (bookings?.length) {
+      this.logger.log(`Control access: ${bookings?.length} bookings to sync!`);
+    } else {
+      this.logger.log(`Control access: No bookings to sync!`);
+    }
   }
 
   addCronJob(name: string, seconds: string) {
@@ -160,37 +167,6 @@ export class ControlidPlugin implements IntegrationInterface {
       this.logger.warn(
         `job ${name} added for each minute at ${seconds} seconds!`,
       );
-    }
-  }
-
-  async checkBookingsForToday() {
-    const bookings = await this.bookingRepository.find({
-      where: {
-        sync_date: IsNull(),
-        start_date: LessThan(
-          formatDateToDatabase(
-            setDateToLocal(addDaysTodate(new Date(), 1)),
-            false,
-          ),
-        ),
-      },
-    });
-    for (const booking of bookings) {
-      if (isToday(new Date(booking.start_date))) {
-        const bookingParsed = BookingParsedDto.buildFromJson(booking);
-        await this.controlidRepository.unblockUserAccessPerLimitDate(
-          bookingParsed,
-        );
-        bookingParsed.setSync(new Date());
-        this.bookingRepository.save(bookingParsed.toJson()).then(() => {
-          this.logger.log(`Booking : ${booking.uuid} Saved!`);
-        });
-      }
-    }
-    if (bookings?.length) {
-      this.logger.log(`Control access: ${bookings?.length} bookings to sync!`);
-    } else {
-      this.logger.log(`Control access: No bookings to sync!`);
     }
   }
 }

@@ -1,22 +1,73 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
-import { MySqlControlidModule } from './database/mysql-controlid.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ControlidPlugin } from './plugins/controlid.plugin';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ApiDeskbee } from './apis/deskbee.api';
-import ControlidRepository from './repositories/controlid.repository';
-import { ApiControlid } from './apis/controlid.api';
-import { BookingEntity } from './entities/booking.entity';
-import { EntranceLogEntity } from './entities/entrance-log.entity';
-
+import { ControlidModule } from './controlid/controlid.module';
+import * as Joi from 'joi';
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      validationSchema: Joi.object({
+        NODE_ENV: Joi.string()
+          .valid('development', 'production')
+          .default('development'),
+        PORT: Joi.number().default(3000),
+        DESKBEE_API_URL: Joi.string().required(),
+        DESKBEE_API_CLIENT_ID: Joi.string().required(),
+        DESKBEE_API_CLIENT_SECRET: Joi.string().required(),
+        DESKBEE_API_SCOPE: Joi.string().required(),
+        CONTROLID_DB_CONNECTION: Joi.string().required().default('mysql'),
+        CONTROLID_SQLITE_DB_PATH: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'sqlite',
+            then: Joi.string()
+              .required()
+              .default('C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite'),
+          },
+        ),
+        CONTROLID_MYSQL_HOST: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'mysql',
+            then: Joi.string().required().default('localhost'),
+          },
+        ),
+        CONTROLID_MYSQL_PORT: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'mysql',
+            then: Joi.number().required().default(3306),
+          },
+        ),
+        CONTROLID_MYSQL_USER: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'mysql',
+            then: Joi.string().required().default('root'),
+          },
+        ),
+        CONTROLID_MYSQL_PASSWORD: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'mysql',
+            then: Joi.string().required(),
+          },
+        ),
+        CONTROLID_MYSQL_DATABASE: Joi.alternatives().conditional(
+          'CONTROLID_DB_CONNECTION',
+          {
+            is: 'mysql',
+            then: Joi.string().required().default('acesso'),
+          },
+        ),
+      }),
+
+      isGlobal: true,
+    }),
     EventEmitterModule.forRoot(),
     ScheduleModule.forRoot(),
     TypeOrmModule.forRoot({
@@ -25,17 +76,10 @@ import { EntranceLogEntity } from './entities/entrance-log.entity';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    TypeOrmModule.forFeature([BookingEntity, EntranceLogEntity]),
-    MySqlControlidModule,
+    ControlidModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    ApiDeskbee,
-    ControlidPlugin,
-    ControlidRepository,
-    ApiControlid,
-  ],
+  providers: [],
   exports: [TypeOrmModule],
 })
 export class AppModule {

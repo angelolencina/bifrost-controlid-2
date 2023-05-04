@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
- 
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3000;
@@ -12,22 +12,23 @@ async function bootstrap() {
   const password = configService.get('RABBITMQ_PASSWORD');
   const host = configService.get('RABBITMQ_HOST');
   const queueName = configService.get('RABBITMQ_QUEUE_NAME');
- 
-  await app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [`amqp://${user}:${password}@${host}`],
-      queue: queueName,
-      queueOptions: {
-        durable: true,
+  const messageBroker = configService.get('RABBITMQ_MESSAGE_BROKER');
+  if (messageBroker === 'true') {
+    await app.connectMicroservice<MicroserviceOptions>({
+      transport: Transport.RMQ,
+      options: {
+        urls: [`amqp://${user}:${password}@${host}`],
+        queue: queueName,
+        queueOptions: {
+          durable: true,
+        },
+        socketOptions: {
+          heartbeatIntervalInSeconds: 5,
+          reconnectTimeInSeconds: 5,
+        },
       },
-      socketOptions:{
-        heartbeatIntervalInSeconds:5,
-        reconnectTimeInSeconds:5
-    }
-    },
-  });
- 
+    });
+  }
   app.startAllMicroservices();
   await app.listen(port, () => {
     Logger.log(`Server started at port:${port}`);

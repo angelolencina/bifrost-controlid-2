@@ -84,6 +84,7 @@ export class ControlidService {
     await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
     this.apiControlid.syncAll();
   }
+
   saveEntranceLog(entrance: EntranceDto) {
     this.entranceRepository.save(entrance.toJson()).then(() => {
       this.logger.log(

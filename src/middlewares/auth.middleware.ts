@@ -6,26 +6,27 @@ import {
   RawBodyRequest,
 } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-const { createHmac } = require('node:crypto');
+import { createHmac } from 'node:crypto';
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   private logger = new Logger('AuthMiddleware', { timestamp: true });
-
+  private signature = process.env.SIGNATURE ?? '';
   use(
     request: RawBodyRequest<Request>,
     response: Response,
     next: NextFunction,
   ): void {
     if (process.env.NODE_ENV === 'production') {
-      const hmac = createHmac('SHA256', process.env.SIGNATURE).setEncoding(
-        'hex',
-      );
-      if (request.headers['x-hub-signature'] !== hmac.update(request.rawBody).digest('hex')) {
+      const hmac = createHmac('SHA256', this.signature);
+      const raw: any = request.rawBody;
+      const digest = hmac.update(raw).digest('hex');
+
+      if (request.headers['x-hub-signature'] !== digest) {
         this.logger.error('Signature not valid: Unauthorized');
         throw new UnauthorizedException();
       }
+      next();
     }
-    next();
   }
 }

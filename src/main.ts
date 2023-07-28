@@ -4,8 +4,17 @@ import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 
+import * as bodyParser from 'body-parser';
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+  const rawBodyBuffer = (req: any, res: any, buf: any, encoding: any) => {
+    if (buf && buf.length) {
+      req.rawBody = buf.toString(encoding || 'utf8');
+    }
+  };
+  app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
+  app.use(bodyParser.json({ verify: rawBodyBuffer }));
   const port = process.env.PORT || 3000;
   const configService = app.get(ConfigService);
   const user = configService.get('RABBITMQ_USER');

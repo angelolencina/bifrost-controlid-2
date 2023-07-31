@@ -68,7 +68,7 @@ export class EntranceDto {
     };
   }
 
-  toCheckinDto() {
+  toCheckInDto() {
     return {
       device: this.idDevice,
       person: this.email,

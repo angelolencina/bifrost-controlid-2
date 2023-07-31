@@ -1,6 +1,6 @@
-import { BookingParsedDto } from '../dtos/booking-parsed.dto';
-import { PassLogsDto } from '../dtos/pass-logs.dto';
-import { UserControlidDto } from '../dtos/user-controlid.dto';
+import { BookingParsedDto } from '../dto/booking-parsed.dto';
+import { PassLogsDto } from '../dto/pass-logs.dto';
+import { UserControlidDto } from '../dto/user-controlid.dto';
 
 export default interface ControlidRepositoryInterface {
   getEntranceRecords?(): void;

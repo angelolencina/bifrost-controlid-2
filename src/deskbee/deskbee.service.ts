@@ -5,8 +5,8 @@ import { apiDeskbee, getBearerToken } from '../apis/deskbee-base.api';
 import { ConfigurationEntity } from '../entities/configuration.entity';
 import { isValidToken } from '../utils/is-token-expired.util';
 import { AxiosInstance } from 'axios';
-import { CheckInDto } from '../dtos/checkin.dto';
-import { PersonalBadgeDto } from '../dtos/personal-badge.dto';
+import { CheckInDto } from '../dto/checkin.dto';
+import { PersonalBadgeDto } from '../dto/personal-badge.dto';
 
 @Injectable()
 export class DeskbeeService {

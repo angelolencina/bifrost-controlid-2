@@ -1,4 +1,4 @@
-import { BookingParsedDto } from '../dtos/booking-parsed.dto';
+import { BookingParsedDto } from '../dto/booking-parsed.dto';
 export default interface IntegrationInterface {
   handleAccessControl(booking: BookingParsedDto): void;
   automateCheckIn(): void;

@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import { AxiosInstance } from 'axios';
-import { CheckInDto } from '../dtos/checkin.dto';
-import { PersonalBadgeDto } from '../dtos/personal-badge.dto';
+import { CheckInDto } from '../dto/checkin.dto';
+import { PersonalBadgeDto } from '../dto/personal-badge.dto';
 import Deskbee from '../interfaces/deskbee.interface';
 import { apiDeskbee } from './deskbee-base.api';
 
@@ -30,7 +30,7 @@ export class ApiDeskbee implements Deskbee {
       });
   };
 
-  checkinByUser = (events: CheckInDto[]) => {
+  checkInByUser = (events: CheckInDto[]) => {
     this.logger.log(`Checkin on deskbee: ${events.length}  Start!`);
     return this.api
       .post(`/v1.1/integrations/checkin`, events)

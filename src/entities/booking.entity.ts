@@ -13,9 +13,13 @@ export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({})
+  @Column()
   @Index({ unique: true })
   uuid: string;
+
+  @Column()
+  @Index()
+  event: string;
 
   @Column()
   start_date: string;

@@ -9,7 +9,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: () => ({
         type: 'sqlite',
-        database: __dirname + 'gateway.sqlite',
+        database: 'gateway.sqlite',
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         autoLoadEntities: true,
       }),

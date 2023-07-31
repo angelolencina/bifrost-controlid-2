@@ -7,9 +7,9 @@ import ControlidRepositoryInterface from '../interfaces/controlid-repository.int
 import { formatDateToDatabase } from '../utils/format-date.util';
 import { getLastDayString } from '../utils/get-last-day-string.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
-import { BookingParsedDto } from '../dtos/booking-parsed.dto';
-import { PassLogsDto } from '../dtos/pass-logs.dto';
-import { UserControlidDto } from '../dtos/user-controlid.dto';
+import { BookingParsedDto } from '../dto/booking-parsed.dto';
+import { PassLogsDto } from '../dto/pass-logs.dto';
+import { UserControlidDto } from '../dto/user-controlid.dto';
 
 @Injectable()
 export default class ControlidRepository

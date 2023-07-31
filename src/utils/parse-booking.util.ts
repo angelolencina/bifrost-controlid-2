@@ -1,9 +1,7 @@
-import { BookingParsedDto } from '../dtos/booking-parsed.dto';
-import { BookingWebhookDto } from '../dtos/booking-webhook.dto';
-import { BookingDto } from '../dtos/booking.dto';
+import { BookingParsedDto } from '../dto/booking-parsed.dto';
+import { BookingWebhookDto } from '../dto/booking-webhook.dto';
 
 export const parseBooking = (
-  booking: BookingDto,
   bookingWebHook: BookingWebhookDto,
 ): BookingParsedDto => {
   const tolerance = {
@@ -16,24 +14,20 @@ export const parseBooking = (
     ),
   };
   return new BookingParsedDto({
-    uuid: booking.uuid,
-    start_date: new Date(booking.start_date),
-    end_date: new Date(booking.end_date),
+    uuid: bookingWebHook.included.booking_uuid,
+    event: bookingWebHook.event,
+    start_date: new Date(bookingWebHook.included.start_date),
+    end_date: new Date(bookingWebHook.included.end_date),
     state: bookingWebHook.included.status.name,
     action: bookingWebHook.resource.action,
-    person: booking.person,
-    place: booking.place,
+    person: bookingWebHook.included.person,
+    place: bookingWebHook.included.place,
     tolerance: bookingWebHook?.included?.tolerance?.minutes ? tolerance : null,
-    created_at: new Date(booking.created_at),
-    updated_at: new Date(booking.updated_at),
-    deleted_at: booking?.deleted_at ? new Date(booking.deleted_at) : null,
+    created_at: new Date(bookingWebHook.send_at),
+    updated_at: new Date(bookingWebHook.send_at),
+    deleted_at:
+      bookingWebHook.resource.action === 'deleted'
+        ? new Date(bookingWebHook.send_at)
+        : null,
   });
-};
-
-const parseTolerance = (tolerance: any) => {
-  return {
-    minutes: tolerance.minutes,
-    checkin_max_time: new Date(tolerance.checkin_max_time),
-    checkin_min_time: new Date(tolerance.checkin_min_time),
-  };
 };

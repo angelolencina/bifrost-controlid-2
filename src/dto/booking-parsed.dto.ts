@@ -8,6 +8,7 @@ import { setDateToLocal } from '../utils/set-date-to-local.util';
 type BookingProps = {
   id?: string;
   uuid: string;
+  event: string;
   start_date: Date;
   end_date: Date;
   tolerance: Tolerance | null;
@@ -23,6 +24,7 @@ type BookingProps = {
 export class BookingParsedDto {
   #id: string;
   #uuid: string;
+  #event: string;
   #start_date: Date;
   #end_date: Date;
   #tolerance: Tolerance | null;
@@ -32,12 +34,13 @@ export class BookingParsedDto {
   #place: Place;
   #created_at: Date;
   #updated_at: Date;
-  #sync_date: Date | null;
-  #deleted_at: Date | null;
+  #sync_date?: Date | null | undefined;
+  #deleted_at?: Date | null | undefined;
 
   constructor(props: BookingProps) {
     this.#id = props?.id ? props.id : uuid();
     this.#uuid = props.uuid;
+    this.#event = props.event;
     this.#start_date = props.start_date;
     this.#end_date = props.end_date;
     this.#tolerance = props.tolerance;
@@ -56,6 +59,10 @@ export class BookingParsedDto {
 
   get uuid(): string {
     return this.#uuid;
+  }
+
+  get event(): string {
+    return this.#event;
   }
 
   get start_date(): Date {
@@ -94,11 +101,11 @@ export class BookingParsedDto {
     return this.#updated_at;
   }
 
-  get deleted_at(): Date | null {
+  get deleted_at(): Date | null | undefined {
     return this.#deleted_at;
   }
 
-  get sync_date(): Date | null {
+  get sync_date(): Date | null | undefined {
     return this.#sync_date;
   }
 
@@ -110,6 +117,7 @@ export class BookingParsedDto {
     return {
       id: this.id,
       uuid: this.uuid,
+      event: this.#event,
       start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
       end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
       tolerance: this.tolerance
@@ -147,6 +155,7 @@ export class BookingParsedDto {
     return new BookingParsedDto({
       id: json.id,
       uuid: json.uuid,
+      event: json.event,
       start_date: new Date(json.start_date),
       end_date: new Date(json.end_date),
       tolerance: tolerance ? tolerance : null,

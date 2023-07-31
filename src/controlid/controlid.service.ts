@@ -1,18 +1,18 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { BookingWebhookDto } from '../dtos/booking-webhook.dto';
+import { BookingWebhookDto } from '../dto/booking-webhook.dto';
 import { parseBooking } from '../utils/parse-booking.util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, LessThan, Repository } from 'typeorm';
-import { BookingParsedDto } from '../dtos/booking-parsed.dto';
+import { BookingParsedDto } from '../dto/booking-parsed.dto';
 import { BookingEntity } from '../entities/booking.entity';
 import { isToday } from '../utils/is-today.util';
 import { MYSQL_CONTROLID_CONNECTION } from '../database/db.constants';
 import { ApiControlid } from '../apis/controlid.api';
 import { EntranceLogEntity } from '../entities/entrance-log.entity';
-import { EntranceDto } from '../dtos/entrance.dto';
+import { EntranceDto } from '../dto/entrance.dto';
 import ControlidRepository from '../repositories/controlid.repository';
-import { addDaysTodate } from '../utils/add-days-to-date';
+import { addDaysToDate } from '../utils/add-days-to-date';
 import { formatDateToDatabase } from '../utils/format-date.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
 import { CronJob } from 'cron';
@@ -20,14 +20,15 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import * as dotenv from 'dotenv';
 import { DeskbeeService } from '../deskbee/deskbee.service';
 dotenv.config();
-const { ACCESS_CONTROL, AUTOMATED_CHECKIN, GENERATE_USER_QRCODE } = process.env;
+const { ACCESS_CONTROL, AUTOMATED_CHECK_IN, GENERATE_USER_QR_CODE } =
+  process.env;
 
 @Injectable()
 export class ControlidService {
   public logger = new Logger('controlidService');
   public accessControl: boolean = ACCESS_CONTROL === 'true';
-  public automatedCheckIn: boolean = AUTOMATED_CHECKIN === 'true';
-  public generateUserQrCode: boolean = GENERATE_USER_QRCODE === 'true';
+  public automatedCheckIn: boolean = AUTOMATED_CHECK_IN === 'true';
+  public generateUserQrCode: boolean = GENERATE_USER_QR_CODE === 'true';
   constructor(
     private readonly controlidRepository: ControlidRepository,
     private readonly deskbeeService: DeskbeeService,
@@ -57,12 +58,7 @@ export class ControlidService {
       this.logger.log(
         `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
       );
-      const booking = await this.deskbeeService.getBookingByUuid(
-        bookingWebhook.resource.uuid,
-      );
-      if (booking) {
-        this.handleAccessControl(parseBooking(booking, bookingWebhook));
-      }
+      this.handleAccessControl(parseBooking(bookingWebhook));
     }
   }
 
@@ -99,7 +95,7 @@ export class ControlidService {
       for (const log of logs) {
         this.saveEntranceLog(log);
       }
-      const checkIns = logs.map((log: any) => log.toCheckinDto());
+      const checkIns = logs.map((log: any) => log.toCheckInDto());
       if (checkIns.length > 0) {
         this.deskbeeService.checkInByUser(checkIns);
       }
@@ -112,7 +108,7 @@ export class ControlidService {
         sync_date: IsNull(),
         start_date: LessThan(
           formatDateToDatabase(
-            setDateToLocal(addDaysTodate(new Date(), 1)),
+            setDateToLocal(addDaysToDate(new Date(), 1)),
             false,
           ),
         ),

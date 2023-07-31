@@ -26,5 +26,6 @@ dbProvider.useValue.getConnection((err, connection) => {
 @Module({
   providers: [dbProvider],
   exports: [dbProvider],
+  imports: [],
 })
 export class MySqlControlidModule {}

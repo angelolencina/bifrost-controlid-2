@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios from 'axios';
 import * as https from 'https';
 const baseURL: string = process.env.DESKBEE_API_URL || 'https://api.deskbee.io';
 const headers = { 'Content-Type': `application/json; charset=UTF-8` };
@@ -18,9 +18,6 @@ type TBody = {
 export const getBearerToken = (body: TBody) => {
   const config = {
     headers: { 'Content-Type': `application/json; charset=UTF-8` },
-    httpsAgent: new https.Agent({
-      rejectUnauthorized: false,
-    }),
   };
   return axios
     .post(`${baseURL}/v1.1/oauth/token`, body, config)

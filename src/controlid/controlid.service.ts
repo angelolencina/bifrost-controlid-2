@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { BookingWebhookDto } from '../dtos/booking-webhook.dto';
 import { parseBooking } from '../utils/parse-booking.util';
-import { ApiDeskbee } from '../apis/deskbee.api';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, LessThan, Repository } from 'typeorm';
 import { BookingParsedDto } from '../dtos/booking-parsed.dto';
@@ -19,6 +18,7 @@ import { setDateToLocal } from '../utils/set-date-to-local.util';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import * as dotenv from 'dotenv';
+import { DeskbeeService } from '../deskbee/deskbee.service';
 dotenv.config();
 const { ACCESS_CONTROL, AUTOMATED_CHECKIN, GENERATE_USER_QRCODE } = process.env;
 
@@ -30,7 +30,7 @@ export class ControlidService {
   public generateUserQrCode: boolean = GENERATE_USER_QRCODE === 'true';
   constructor(
     private readonly controlidRepository: ControlidRepository,
-    private readonly apiDeskbee: ApiDeskbee,
+    private readonly deskbeeService: DeskbeeService,
     private readonly apiControlid: ApiControlid,
     private schedulerRegistry: SchedulerRegistry,
     @InjectRepository(BookingEntity)
@@ -57,7 +57,7 @@ export class ControlidService {
       this.logger.log(
         `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
       );
-      const booking = await this.apiDeskbee.getBookingByUuid(
+      const booking = await this.deskbeeService.getBookingByUuid(
         bookingWebhook.resource.uuid,
       );
       if (booking) {
@@ -101,7 +101,7 @@ export class ControlidService {
       }
       const checkIns = logs.map((log: any) => log.toCheckinDto());
       if (checkIns.length > 0) {
-        this.apiDeskbee.checkInByUser(checkIns);
+        this.deskbeeService.checkInByUser(checkIns);
       }
     });
   }

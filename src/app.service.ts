@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigurationEntity } from './entities/configuration.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { apiDeskbee, getBearerToken } from './apis/deskbee-base.api';
 import { isValidToken } from './utils/is-token-expired.util';
 
@@ -11,7 +11,7 @@ export class AppService {
   public account = process.env.ACCOUNT;
   constructor(
     @InjectRepository(ConfigurationEntity)
-    private entranceRepository: Repository<ConfigurationEntity>,
+    private configRepository: Repository<ConfigurationEntity>,
   ) {
     apiDeskbee.interceptors.request.use(
       async (config) => {
@@ -24,8 +24,8 @@ export class AppService {
     );
   }
 
-  async getConfigCrendential(): Promise<any> {
-    return this.entranceRepository.findOne({
+  async getConfigCredential(): Promise<any> {
+    return this.configRepository.findOne({
       where: {
         account: this.account,
       },
@@ -34,13 +34,13 @@ export class AppService {
 
   async getToken() {
     this.logger.log(`getToken account: ${this.account}`);
-    const config = await this.getConfigCrendential();
+    const config = await this.getConfigCredential();
     if (config) {
       if (isValidToken(config.token_expires_in)) {
         return config.token;
       }
       return getBearerToken(config.credential).then(async (res) => {
-        await this.entranceRepository.update(
+        await this.configRepository.update(
           { account: this.account },
           {
             token: res.access_token,

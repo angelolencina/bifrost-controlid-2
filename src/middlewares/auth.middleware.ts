@@ -17,7 +17,13 @@ export class AuthMiddleware implements NestMiddleware {
     response: Response,
     next: NextFunction,
   ): void {
-    if (process.env.NODE_ENV === 'production') {
+    if (
+      process.env.NODE_ENV === 'production' &&
+      request.originalUrl !== '/health'
+    ) {
+      if (!request.headers['x-hub-signature']) {
+        throw new UnauthorizedException();
+      }
       const hmac = createHmac('SHA256', this.signature);
       const raw: any = request.rawBody;
       const digest = hmac.update(raw).digest('hex');
@@ -26,6 +32,8 @@ export class AuthMiddleware implements NestMiddleware {
         this.logger.error('Signature not valid: Unauthorized');
         throw new UnauthorizedException();
       }
+      next();
+    } else {
       next();
     }
   }

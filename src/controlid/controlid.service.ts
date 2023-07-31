@@ -101,7 +101,7 @@ export class ControlidService {
       }
       const checkIns = logs.map((log: any) => log.toCheckinDto());
       if (checkIns.length > 0) {
-        this.apiDeskbee.checkinByUser(checkIns);
+        this.apiDeskbee.checkInByUser(checkIns);
       }
     });
   }

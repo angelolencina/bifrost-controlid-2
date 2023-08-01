@@ -8,7 +8,7 @@ import { BookingParsedDto } from '../dto/booking-parsed.dto';
 import { BookingEntity } from '../entities/booking.entity';
 import { isToday } from '../utils/is-today.util';
 import { MYSQL_CONTROLID_CONNECTION } from '../database/db.constants';
-import { ApiControlid } from '../apis/controlid.api';
+import { ApiControlid } from './api/controlid.api';
 import { EntranceLogEntity } from '../entities/entrance-log.entity';
 import { EntranceDto } from '../dto/entrance.dto';
 import ControlidRepository from '../repositories/controlid.repository';

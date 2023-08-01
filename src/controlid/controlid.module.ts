@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ControlidService } from './controlid.service';
-import { ApiControlid } from '../apis/controlid.api';
+import { ApiControlid } from './api/controlid.api';
 import { BookingEntity } from '../entities/booking.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EntranceLogEntity } from '../entities/entrance-log.entity';

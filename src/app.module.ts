@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthMiddleware } from './middlewares/auth.middleware';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { ControlidModule } from './controlid/controlid.module';
+import { ControlidModule } from './controlid-on-premise/controlid.module';
 import { AppService } from './app.service';
 import * as Joi from 'joi';
 import { ConfigurationEntity } from './entities/configuration.entity';

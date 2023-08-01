@@ -17,9 +17,11 @@ import { formatDateToDatabase } from '../utils/format-date.util';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import * as dotenv from 'dotenv';
+import { config } from 'dotenv';
 import { DeskbeeService } from '../deskbee/deskbee.service';
-dotenv.config();
+
+config();
+
 const { ACCESS_CONTROL, AUTOMATED_CHECK_IN, GENERATE_USER_QR_CODE } =
   process.env;
 

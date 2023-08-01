@@ -1,8 +1,10 @@
 import { Logger, Module } from '@nestjs/common';
 import * as mysql from 'mysql2';
 import { MYSQL_CONTROLID_CONNECTION } from './db.constants';
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { config } from 'dotenv';
+
+config();
+
 const logger = new Logger('DBControlid');
 const dbProvider = {
   provide: MYSQL_CONTROLID_CONNECTION,

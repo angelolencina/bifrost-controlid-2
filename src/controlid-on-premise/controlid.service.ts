@@ -27,7 +27,7 @@ const { ACCESS_CONTROL, AUTOMATED_CHECK_IN, GENERATE_USER_QR_CODE } =
 
 @Injectable()
 export class ControlidService {
-  public logger = new Logger('controlidService');
+  public logger = new Logger('Controlid-On-Premise-Service');
   public accessControl: boolean = ACCESS_CONTROL === 'true';
   public automatedCheckIn: boolean = AUTOMATED_CHECK_IN === 'true';
   public generateUserQrCode: boolean = GENERATE_USER_QR_CODE === 'true';

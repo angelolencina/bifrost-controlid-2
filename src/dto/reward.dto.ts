@@ -1,36 +1,31 @@
 import { formatDateToDatabase } from '../utils/format-date.util';
 import { Person } from './person.dto';
 import { Place } from './place.dto';
-import { Tolerance } from './tolerance.dto';
 import { v4 as uuid } from 'uuid';
 import { setDateToLocal } from '../utils/set-date-to-local.util';
+import moment from 'moment';
 
-type BookingProps = {
+type RewardProps = {
   id?: string;
-  uuid: string;
-  event: string;
+  booking_uuid: string;
   email: string;
-  start_date: Date;
-  end_date: Date;
-  tolerance: Tolerance | null;
   state: string;
+  startDate?: Date;
+  event: string;
+  reward_type: string;
   action: string;
   person: Person;
   place: Place;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
 };
 
-export class BookingParsedDto {
+export class RewardDto {
   #id: string;
-  #uuid: string;
-  #event: string;
+  #booking_uuid: string;
   #email: string;
-  #start_date: Date;
-  #end_date: Date;
-  #tolerance: Tolerance | null;
+  #event: string;
   #state: string;
+  #awarded_points: number;
+  #reward_type: string;
   #action: string;
   #person: Person;
   #place: Place;
@@ -38,54 +33,79 @@ export class BookingParsedDto {
   #updated_at: Date;
   #sync_date?: Date | null | undefined;
   #deleted_at?: Date | null | undefined;
+  public static BEFORE_BOOKING = 'beforehand_booking';
+  public static AWARD_WINNING = 'award_winning';
+  public static BY_CHECK_IN = 'by_check_in';
+  public static EXPIRED_BOOKING = 'expired_booking';
+  public static CANCELED_BOOKING = 'canceled_booking';
 
-  constructor(props: BookingProps) {
+  constructor(props: RewardProps) {
     this.#id = props?.id ? props.id : uuid();
-    this.#uuid = props.uuid;
-    this.#event = props.event;
+    this.#booking_uuid = props.booking_uuid;
     this.#email = props.email;
-    this.#start_date = props.start_date;
-    this.#end_date = props.end_date;
-    this.#tolerance = props.tolerance;
+    this.#event = props.event;
     this.#state = props.state;
+    this.#reward_type = props.reward_type;
+    this.#awarded_points = RewardDto.convertToPoints(props.reward_type);
     this.#action = props.action;
     this.#person = props.person;
     this.#place = props.place;
-    this.#created_at = props.created_at;
-    this.#updated_at = props.updated_at;
-    this.#deleted_at = props.deleted_at;
+    this.#created_at = new Date();
+    this.#updated_at = new Date();
+    this.#deleted_at = undefined;
+  }
+
+  static convertToPoints(rewardType: string): number {
+    switch (rewardType) {
+      case RewardDto.BEFORE_BOOKING:
+        return 1;
+      case RewardDto.AWARD_WINNING:
+        return 10;
+      case RewardDto.BY_CHECK_IN:
+        return 1;
+      case RewardDto.EXPIRED_BOOKING:
+        return -1;
+      case RewardDto.CANCELED_BOOKING:
+        return -1;
+      default:
+        return 0;
+    }
+  }
+
+  extraPoint(startDate: Date): number {
+    if (!startDate) {
+      return 0;
+    }
+    const beforeHand = moment().diff(moment(startDate), 'days') >= 2;
+    return beforeHand ? 1 : 0;
   }
 
   get id(): string {
     return this.#id;
   }
 
-  get uuid(): string {
-    return this.#uuid;
-  }
-
-  get event(): string {
-    return this.#event;
+  get booking_uuid(): string {
+    return this.#booking_uuid;
   }
 
   get email(): string {
     return this.#email;
   }
 
-  get start_date(): Date {
-    return this.#start_date;
-  }
-
-  get end_date(): Date {
-    return this.#end_date;
-  }
-
-  get tolerance(): Tolerance | null {
-    return this.#tolerance;
-  }
-
   get state(): string {
     return this.#state;
+  }
+
+  get event(): string {
+    return this.#event;
+  }
+
+  get reward_type(): string {
+    return this.#reward_type;
+  }
+
+  get awarded_points(): number {
+    return this.#awarded_points;
   }
 
   get action(): string {
@@ -120,27 +140,20 @@ export class BookingParsedDto {
     this.#sync_date = date;
   }
 
+  setAwardedPoints(points: number) {
+    this.#awarded_points = points;
+  }
+
   toJson() {
     return {
       id: this.id,
-      uuid: this.uuid,
-      event: this.#event,
-      email: this.#email,
-      start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
-      end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
-      tolerance: this.tolerance
-        ? JSON.stringify({
-            ...this.tolerance,
-            checkin_max_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_max_time),
-            ),
-            checkin_min_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_min_time),
-            ),
-          })
-        : undefined,
+      booking_uuid: this.booking_uuid,
+      email: this.email,
       state: this.state,
+      event: this.event,
       action: this.action,
+      awarded_points: this.awarded_points,
+      reward_type: this.reward_type,
       person: JSON.stringify(this.person),
       place: JSON.stringify(this.place),
       created_at: formatDateToDatabase(setDateToLocal(this.created_at)),
@@ -160,21 +173,16 @@ export class BookingParsedDto {
       tolerance.checkin_max_time = new Date(tolerance.checkin_max_time);
       tolerance.checkin_min_time = new Date(tolerance.checkin_min_time);
     }
-    return new BookingParsedDto({
+    return new RewardDto({
       id: json.id,
-      uuid: json.uuid,
-      event: json.event,
+      booking_uuid: json.uuid,
       email: json.email,
-      start_date: new Date(json.start_date),
-      end_date: new Date(json.end_date),
-      tolerance: tolerance ? tolerance : null,
       state: json.state,
+      reward_type: json.reward_type,
+      event: json.event,
       action: json.action,
       person: JSON.parse(json.person),
       place: JSON.parse(json.place),
-      created_at: new Date(json.created_at),
-      updated_at: new Date(json.updated_at),
-      deleted_at: json.deleted_at ? new Date(json.deleted_at) : null,
     });
   }
 }

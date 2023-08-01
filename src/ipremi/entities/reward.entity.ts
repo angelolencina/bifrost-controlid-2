@@ -9,13 +9,16 @@ import {
 } from 'typeorm';
 
 @Entity('rewards')
+@Index(['booking_uuid', 'event', 'action', 'email'], { unique: true })
 export class RewardEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ type: 'uuid' })
-  @Index({ unique: true })
   booking_uuid: string;
+
+  @Column()
+  event: string;
 
   @Column()
   state: string;
@@ -34,11 +37,17 @@ export class RewardEntity {
   @Column()
   action: string;
 
+  @Column()
+  email: string;
+
   @Column({ type: 'simple-json' })
   person: string;
 
   @Column()
   awarded_points: number;
+
+  @Column()
+  reward_type: string;
 
   @Column({ type: 'simple-json' })
   place: string;

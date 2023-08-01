@@ -8,7 +8,6 @@ export class AppController {
 
   @Post('/events')
   saveEvent(@Body() payload: any): void {
-    console.log(`${payload.event}`)
     this.eventEmitter.emit(`${payload.event}`, payload);
   }
 

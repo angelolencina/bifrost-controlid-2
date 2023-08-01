@@ -9,16 +9,15 @@ import {
 } from 'typeorm';
 
 @Entity('bookings')
+@Index(['uuid', 'event', 'email'], { unique: true })
 export class BookingEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  @Index({ unique: true })
   uuid: string;
 
   @Column()
-  @Index()
   event: string;
 
   @Column()
@@ -35,6 +34,9 @@ export class BookingEntity {
 
   @Column()
   action: string;
+
+  @Column()
+  email: string;
 
   @Column({ type: 'simple-json', nullable: true })
   person: string;

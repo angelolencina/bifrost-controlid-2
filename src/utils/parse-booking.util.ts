@@ -16,6 +16,7 @@ export const parseBooking = (
   return new BookingParsedDto({
     uuid: bookingWebHook.included.booking_uuid,
     event: bookingWebHook.event,
+    email: bookingWebHook.included.person.email,
     start_date: new Date(bookingWebHook.included.start_date),
     end_date: new Date(bookingWebHook.included.end_date),
     state: bookingWebHook.included.status.name,

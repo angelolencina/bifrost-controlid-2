@@ -1,5 +1,5 @@
-import { BookingParsedDto } from '../../dto/booking-parsed.dto';
-import { RewardDto } from '../../dto/reward.dto';
+import { BookingParsedDto } from '../../../dto/booking-parsed.dto';
+import { RewardDto } from '../../../dto/reward.dto';
 
 export const factoryReward = (
   bookingParsed: BookingParsedDto,

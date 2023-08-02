@@ -10,7 +10,7 @@ import { AppService } from './app.service';
 import * as Joi from 'joi';
 import { ConfigurationEntity } from './entities/configuration.entity';
 import { DeskbeeModule } from './deskbee/deskbee.module';
-import { IpremiModule } from './ipremi/ipremi.module';
+import { IpremiModule } from './modules/ipremi/ipremi.module';
 import DatabaseModule from './database/database.module';
 import { AccountEntity } from './entities/account.entity';
 import { Repository } from 'typeorm';

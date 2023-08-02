@@ -1,10 +1,10 @@
 //- Base de elegíveis (funcionários Cielo + estagiários + menor aprendiz)  Membros da Diretoria Executiva , Superintendentes e Secretárias excluso da campanha em virtude do check-in transparente. Terceiros: excluso da campanha.
 
-import { BookingWebhookDto } from '../dto/booking-webhook.dto';
-import { Place } from '../dto/place.dto';
-import { CheckInDto } from '../dto/checkin.dto';
-import { CheckInWebhookDto } from '../dto/checkInEvent.dto';
-import { BookingParsedDto } from '../dto/booking-parsed.dto';
+import { BookingWebhookDto } from '../../dto/booking-webhook.dto';
+import { Place } from '../../dto/place.dto';
+import { CheckInDto } from '../../dto/checkin.dto';
+import { CheckInWebhookDto } from '../../dto/checkInEvent.dto';
+import { BookingParsedDto } from '../../dto/booking-parsed.dto';
 
 const EVENT_CHECK_IN = 'checkin';
 const EVENT_BOOKING = 'booking';

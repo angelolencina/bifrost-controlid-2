@@ -27,7 +27,6 @@ export class ControlidModule {
           BookingEntity,
         ]),
         DeskbeeModule,
-        MySqlControlidModule,
       ],
       providers: [
         {

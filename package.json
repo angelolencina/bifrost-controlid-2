@@ -24,7 +24,8 @@
     "typeorm:generate-migration": "npm run typeorm -- -d ./typeOrmGateway.config.ts migration:generate ./migrations/$npm_config_name",
     "typeorm:create-migration": "npm run typeorm -- migration:create ./migrations/$npm_config_name",
     "typeorm:revert-migration": "npm run typeorm -- -d ./typeOrmGateway.config.ts migration:revert",
-    "ngrok": "ngrok http 3000 --subdomain lencina"
+    "ngrok": "ngrok http 3000 --subdomain lencina",
+    "prettier": "prettier --write '**/*.{ts,js,css,html}'"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.0",

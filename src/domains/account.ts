@@ -3,8 +3,8 @@ import { ISettings } from '../interface/settings.interface';
 
 type AccountProps = {
   code: string;
-  settings: ISettings;
-  integration: IIntegration[];
+  settings?: ISettings;
+  integration?: IIntegration[];
 };
 export class Account {
   #code: string;
@@ -15,7 +15,24 @@ export class Account {
     this.#settings = JSON.stringify(props.settings);
     this.#integration = JSON.stringify(props.integration);
   }
-  code: string;
-  settings: ISettings;
-  integration: IIntegration[];
+
+  get code(): string {
+    return this.#code;
+  }
+
+  get settings(): ISettings {
+    return JSON.parse(this.#settings);
+  }
+
+  get integration(): IIntegration[] {
+    return JSON.parse(this.#integration);
+  }
+  
+  toJson() {
+    return {
+      code: this.code,
+      settings: this.settings,
+      integration: this.integration,
+    };
+  }
 }

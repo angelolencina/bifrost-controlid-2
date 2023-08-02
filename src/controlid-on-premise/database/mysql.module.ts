@@ -19,7 +19,7 @@ const dbProvider = {
 
 dbProvider.useValue.getConnection((err, connection) => {
   if (err) {
-    logger.error('Error connecting to DBControlid: ', err);
+    logger.verbose('Error when connect to DBControlid');
     return;
   }
   logger.log('Connected to DBControlid');

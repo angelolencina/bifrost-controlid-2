@@ -1,4 +1,10 @@
+export enum EPlace {
+  dininghall = 'dininghall',
+  meetingroom = 'meetingroom',
+  locker = 'locker',
+}
 export interface ISettings {
-  homologation: boolean;
-  emails_on_homologation?: string[];
+  in_homologation: boolean;
+  mails_on_homologation?: string[];
+  places_active: string[];
 }

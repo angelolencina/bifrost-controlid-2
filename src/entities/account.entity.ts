@@ -14,6 +14,7 @@ export class AccountEntity {
   id: string;
 
   @Column()
+  @Index({ unique: true })
   code: string;
 
   @Column({ type: 'simple-json', nullable: true })

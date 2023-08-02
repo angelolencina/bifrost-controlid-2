@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { apiDeskbee, getBearerToken } from './apis/deskbee-base.api';
 import { isValidToken } from './utils/is-token-expired.util';
+import { AccountEntity } from './entities/account.entity';
+import AccountFactory from './factory/account.factory';
 
 @Injectable()
 export class AppService {
@@ -12,6 +14,8 @@ export class AppService {
   constructor(
     @InjectRepository(ConfigurationEntity)
     private configRepository: Repository<ConfigurationEntity>,
+    @InjectRepository(AccountEntity)
+    private accountRepository: Repository<AccountEntity>,
   ) {
     apiDeskbee.interceptors.request.use(
       async (config) => {
@@ -56,5 +60,12 @@ export class AppService {
   async saveToken(response: any) {
     this.logger.log(`saveToken account: ${this.account}`);
     console.log('response', response);
+  }
+
+  async saveAccount(account: any) {
+    this.logger.log(`saveAccount account: ${this.account}`);
+    account = AccountFactory.createAccount(account);
+    await this.accountRepository.upsert([account.toJson()], ['code']);
+    return this.accountRepository.findOne({ where: { code: account.code } });
   }
 }

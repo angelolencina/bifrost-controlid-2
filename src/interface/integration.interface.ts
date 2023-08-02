@@ -2,6 +2,7 @@ import { IntegrationName } from '../domains/integration.enum';
 
 export interface IIntegration {
   name: IntegrationName;
+  features: string[];
   mysql?: MySqlDataBase;
   sqlite?: SqLiteDataBase;
   api?: ApiDto;

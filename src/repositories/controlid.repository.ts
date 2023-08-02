@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { MYSQL_CONTROLID_CONNECTION } from '../database/db.constants';
+import { MYSQL_CONTROLID_CONNECTION } from '../controlid-on-premise/database/db.constants';
 import { EntranceLogEntity } from '../entities/entrance-log.entity';
 import ControlidRepositoryInterface from '../interfaces/controlid-repository.interface';
 import { formatDateToDatabase } from '../utils/format-date.util';

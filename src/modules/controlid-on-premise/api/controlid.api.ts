@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as https from 'https';
-import ControlidApiInterface from '../../interfaces/controlid-api.interface';
+import ControlidApiInterface from '../../../interfaces/controlid-api.interface';
 
 export class ApiControlid implements ControlidApiInterface {
   private readonly logger = new Logger('ApiControlid');

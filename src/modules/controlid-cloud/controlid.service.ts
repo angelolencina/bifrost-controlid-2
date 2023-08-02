@@ -1,24 +1,24 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { BookingWebhookDto } from '../dto/booking-webhook.dto';
-import { parseBooking } from '../utils/parse-booking.util';
+import { BookingWebhookDto } from '../../dto/booking-webhook.dto';
+import { parseBooking } from '../../utils/parse-booking.util';
 import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, LessThan, Repository } from 'typeorm';
-import { BookingParsedDto } from '../dto/booking-parsed.dto';
-import { BookingEntity } from '../entities/booking.entity';
-import { isToday } from '../utils/is-today.util';
-import { MYSQL_CONTROLID_CONNECTION } from '../modules/controlid-on-premise/database/db.constants';
+import { BookingParsedDto } from '../../dto/booking-parsed.dto';
+import { BookingEntity } from '../../entities/booking.entity';
+import { isToday } from '../../utils/is-today.util';
+import { MYSQL_CONTROLID_CONNECTION } from '../controlid-on-premise/database/db.constants';
 import { ApiControlid } from './api/controlid.api';
-import { EntranceLogEntity } from '../entities/entrance-log.entity';
-import { EntranceDto } from '../dto/entrance.dto';
-import ControlidRepository from '../repositories/controlid.repository';
-import { addDaysToDate } from '../utils/add-days-to-date';
-import { formatDateToDatabase } from '../utils/format-date.util';
-import { setDateToLocal } from '../utils/set-date-to-local.util';
+import { EntranceLogEntity } from '../../entities/entrance-log.entity';
+import { EntranceDto } from '../../dto/entrance.dto';
+import ControlidRepository from '../../repositories/controlid.repository';
+import { addDaysToDate } from '../../utils/add-days-to-date';
+import { formatDateToDatabase } from '../../utils/format-date.util';
+import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { config } from 'dotenv';
-import { DeskbeeService } from '../deskbee/deskbee.service';
+import { DeskbeeService } from '../../deskbee/deskbee.service';
 
 config();
 

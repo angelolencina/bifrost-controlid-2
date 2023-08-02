@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Usergroups } from './Usergroups';
-import { Operatortypegroups } from './Operatortypegroups';
-import { Groupidentificationrules } from './Groupidentificationrules';
+import { Usergroups } from './Usergroups.entity';
+import { Operatortypegroups } from './Operatortypegroups.entity';
+import { Groupidentificationrules } from './Groupidentificationrules.entity';
 
 @Entity('groups', { schema: 'acesso' })
 export class Groups {

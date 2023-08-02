@@ -1,12 +1,9 @@
 import { Inject, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { config } from 'dotenv';
 import { BookingEntity } from '../../entities/booking.entity';
 import { IsNull, LessThan, Repository } from 'typeorm';
 import { CronJob } from 'cron';
-import ControlidRepository from '../../repositories/controlid.repository';
 import { EntranceDto } from '../../dto/entrance.dto';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
 import { BookingParsedDto } from '../../dto/booking-parsed.dto';
@@ -15,7 +12,6 @@ import { formatDateToDatabase } from '../../utils/format-date.util';
 import { isToday } from '../../utils/is-today.util';
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
-import { AccountEntity } from '../../entities/account.entity';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 import ControlidOptions from './interface/controlid-options.interface';
 
@@ -25,7 +21,6 @@ export class CronService {
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
     private readonly deskbeeService: DeskbeeService,
     private schedulerRegistry: SchedulerRegistry,
-    private readonly controlidRepository: ControlidRepository,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
     @InjectRepository(EntranceLogEntity)
@@ -84,16 +79,17 @@ export class CronService {
   }
 
   automateCheckIn() {
-    this.controlidRepository.getUserPassLogs().then((logs: any) => {
-      logs = logs.map((log: any) => new EntranceDto(log));
-      for (const log of logs) {
-        this.saveEntranceLog(log);
-      }
-      const checkIns = logs.map((log: any) => log.toCheckInDto());
-      if (checkIns.length > 0) {
-        this.deskbeeService.checkInByUser(checkIns);
-      }
-    });
+    // this.controlidRepository.getUserPassLogs().then((logs: any) => {
+    //   logs = logs.map((log: any) => new EntranceDto(log));
+    //   for (const log of logs) {
+    //     this.saveEntranceLog(log);
+    //   }
+    //   const checkIns = logs.map((log: any) => log.toCheckInDto());
+    //   if (checkIns.length > 0) {
+    //     this.deskbeeService.checkInByUser(checkIns);
+    //   }
+    // });
+    
   }
 
   saveEntranceLog(entrance: EntranceDto) {
@@ -119,9 +115,9 @@ export class CronService {
     for (const booking of bookings) {
       if (isToday(new Date(booking.start_date))) {
         const bookingParsed = BookingParsedDto.buildFromJson(booking);
-        await this.controlidRepository.unblockUserAccessPerLimitDate(
-          bookingParsed,
-        );
+        // await this.controlidRepository.unblockUserAccessPerLimitDate(
+        //   bookingParsed,
+        // );
         bookingParsed.setSync(new Date());
         this.bookingRepository.save(bookingParsed.toJson()).then(() => {
           this.logger.log(`Booking : ${booking.uuid} Saved!`);

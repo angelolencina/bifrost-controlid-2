@@ -11,7 +11,6 @@ import { MYSQL_CONTROLID_CONNECTION } from '../controlid-on-premise/database/db.
 import { ApiControlid } from './api/controlid.api';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
 import { EntranceDto } from '../../dto/entrance.dto';
-import ControlidRepository from '../../repositories/controlid.repository';
 import { addDaysToDate } from '../../utils/add-days-to-date';
 import { formatDateToDatabase } from '../../utils/format-date.util';
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
@@ -19,6 +18,7 @@ import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { config } from 'dotenv';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
+import ControlidRepository from '../controlid-on-premise/database/repositories/controlid.repository';
 
 config();
 

@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Identificationrules } from './Identificationrules';
-import { Usertypes } from './Usertypes';
+import { Identificationrules } from './Identificationrules.entity';
+import { Usertypes } from './Usertypes.entity';
 
 @Index('fkTypeIdentificationRules', ['idIdentificationRule'], {})
 @Index('fkTypeIdentificationRules2', ['idType'], {})

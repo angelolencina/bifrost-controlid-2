@@ -11,9 +11,10 @@ import * as Joi from 'joi';
 import { ConfigurationEntity } from './entities/configuration.entity';
 import { DeskbeeModule } from './deskbee/deskbee.module';
 import { IpremiModule } from './modules/ipremi/ipremi.module';
-import DatabaseModule from './database/database.module';
+import GatewayDatabaseModule from './database/gateway-database.module';
 import { AccountEntity } from './entities/account.entity';
 import { Repository } from 'typeorm';
+import DatabaseModule from './modules/controlid-on-premise/database/database.module';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { Repository } from 'typeorm';
     TypeOrmModule.forFeature([ConfigurationEntity, AccountEntity]),
     DeskbeeModule,
     IpremiModule,
-    DatabaseModule,
+    GatewayDatabaseModule,
     ControlidModule.registerAsync({
       inject: [getRepositoryToken(AccountEntity)],
       useFactory: async (accountRepository: Repository<AccountEntity>) => {

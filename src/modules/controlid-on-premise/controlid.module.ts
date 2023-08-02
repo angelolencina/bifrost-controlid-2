@@ -5,7 +5,6 @@ import { BookingEntity } from '../../entities/booking.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
 import { MySqlControlidModule } from './database/mysql.module';
-import ControlidRepository from '../../repositories/controlid.repository';
 import { DeskbeeModule } from '../../deskbee/deskbee.module';
 import { CronService } from './cron.service';
 import { AccountEntity } from '../../entities/account.entity';
@@ -13,6 +12,13 @@ import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant
 import ControlidOptions from './interface/controlid-options.interface';
 import ControlidAsyncOptions from './types/controlid-async-options.type';
 import { ConfigurationEntity } from '../../entities/configuration.entity';
+import DatabaseModule from './database/database.module';
+import { userProviders } from './providers/users.provider';
+import { DataSource } from 'typeorm';
+import { Users } from './entities/Users.entity';
+import { Cards } from './entities/Cards.entity';
+import { Logs } from './entities/Logs.entity';
+import ControlidRepository from './database/repositories/controlid.repository';
 
 @Module({})
 export class ControlidModule {
@@ -26,7 +32,9 @@ export class ControlidModule {
           EntranceLogEntity,
           BookingEntity,
         ]),
+        //TypeOrmModule.forFeature([Users, Cards, Logs], 'controlid'),
         DeskbeeModule,
+        DatabaseModule,
       ],
       providers: [
         {
@@ -36,7 +44,6 @@ export class ControlidModule {
         },
         ControlidService,
         ApiControlid,
-        ControlidRepository,
         CronService,
       ],
       exports: [ControlidService],

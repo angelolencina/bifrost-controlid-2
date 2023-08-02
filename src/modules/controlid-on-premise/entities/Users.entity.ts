@@ -5,10 +5,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Usergroups } from './Usergroups';
-import { Templates } from './Templates';
-import { Useridentificationrules } from './Useridentificationrules';
-import { Cards } from './Cards';
+import { Usergroups } from './Usergroups.entity';
+import { Templates } from './Templates.entity';
+import { Useridentificationrules } from './Useridentificationrules.entity';
+import { Cards } from './Cards.entity';
 
 @Index('idx_users_idType', ['idType'], {})
 @Index('idx_users_contingency', ['contingency'], {})

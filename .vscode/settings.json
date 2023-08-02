@@ -3,6 +3,7 @@
         "Controlid",
         "Deskbee",
         "Ipremi",
+        "Typeidentificationrules",
         "typeorm"
     ]
 }

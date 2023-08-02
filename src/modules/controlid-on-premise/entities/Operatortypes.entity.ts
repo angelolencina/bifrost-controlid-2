@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Operatortypegroups } from './Operatortypegroups';
+import { Operatortypegroups } from './Operatortypegroups.entity';
 
 @Entity('operatortypes', { schema: 'acesso' })
 export class Operatortypes {

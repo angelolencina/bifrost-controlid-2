@@ -6,7 +6,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Devices } from './Devices';
+import { Devices } from './Devices.entity';
 
 @Index('fkRelays', ['idDevice'], {})
 @Entity('devicerelays', { schema: 'acesso' })

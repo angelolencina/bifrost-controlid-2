@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Operatortypes } from './Operatortypes';
-import { Groups } from './Groups';
+import { Operatortypes } from './Operatortypes.entity';
+import { Groups } from './Groups.entity';
 
 @Index('fkOperatorTypeGroups', ['idOperatorType'], {})
 @Index('fkOperatorTypeGroups2', ['idGroup'], {})

@@ -8,7 +8,7 @@ export default interface ControlidRepositoryInterface {
   blockUserAccessPerLimitDateByEmail(email: string): void;
 
   getNewRegisteredUsers(): Promise<UserControlidDto[]>;
-  saveUserCard(userId: number, identification: string): Promise<void>;
+  saveUserCard(userId: string, identification: number): Promise<any>;
   /**
    * Save QRcode custom to user on controlid.
    *

@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Modeidentificationrules } from './Modeidentificationrules';
+import { Modeidentificationrules } from './Modeidentificationrules.entity';
 
 @Entity('identificationmodes', { schema: 'acesso' })
 export class Identificationmodes {

@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Devicerelays } from './Devicerelays';
+import { Devicerelays } from './Devicerelays.entity';
 
 @Entity('devices', { schema: 'acesso' })
 export class Devices {

@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Users } from './Users';
-import { Groups } from './Groups';
+import { Users } from './Users.entity';
+import { Groups } from './Groups.entity';
 
 @Index('fkUserGroups', ['idUser'], {})
 @Index('fkUserGroups2', ['idGroup'], {})

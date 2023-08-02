@@ -4,15 +4,15 @@ import { ApiControlid } from './api/controlid.api';
 import { BookingEntity } from '../../entities/booking.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
-import { MySqlControlidModule } from '../controlid-on-premise/database/mysql.module';
-import ControlidRepository from '../../repositories/controlid.repository';
 import { DeskbeeModule } from '../../deskbee/deskbee.module';
+import ControlidRepository from '../controlid-on-premise/database/repositories/controlid.repository';
+import DatabaseModule from '../controlid-on-premise/database/database.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([BookingEntity, EntranceLogEntity]),
-    MySqlControlidModule,
     DeskbeeModule,
+    DatabaseModule,
   ],
   controllers: [],
   providers: [ControlidService, ApiControlid, ControlidRepository],

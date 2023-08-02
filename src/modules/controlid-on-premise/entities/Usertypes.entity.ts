@@ -1,5 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Typeidentificationrules } from './Typeidentificationrules';
+import { Typeidentificationrules } from './Typeidentificationrules.entity';
 
 @Entity('usertypes', { schema: 'acesso' })
 export class Usertypes {

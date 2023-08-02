@@ -1,8 +1,8 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { Useridentificationrules } from './Useridentificationrules';
-import { Typeidentificationrules } from './Typeidentificationrules';
-import { Modeidentificationrules } from './Modeidentificationrules';
-import { Groupidentificationrules } from './Groupidentificationrules';
+import { Useridentificationrules } from './Useridentificationrules.entity';
+import { Typeidentificationrules } from './Typeidentificationrules.entity';
+import { Modeidentificationrules } from './Modeidentificationrules.entity';
+import { Groupidentificationrules } from './Groupidentificationrules.entity';
 
 @Entity('identificationrules', { schema: 'acesso' })
 export class Identificationrules {

@@ -6,8 +6,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Identificationrules } from './Identificationrules';
-import { Groups } from './Groups';
+import { Identificationrules } from './Identificationrules.entity';
+import { Groups } from './Groups.entity';
 
 @Index('fkGroupIdentificationRules', ['idIdentificationRule'], {})
 @Index('fkGroupIdentificationRules2', ['idGroup'], {})

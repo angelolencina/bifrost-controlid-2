@@ -1,0 +1,26 @@
+POST http://localhost:3000/accounts
+x-signature: {{$dotenv SIGNATURE}}
+content-type: application/json
+
+{
+	"code":"",
+	"integration": [{
+		"name": "controlid-on-premise",
+		"features": ["access-control", "automated-checkin", "qr-code"],
+		"mysql": {
+			"host": "localhost",
+			"username": "root",
+			"password": "P4sswD",
+			"port": 3307,
+			"database": "acesso"
+		},
+		"sqlite": null,
+		"mailsToExcludeFromAccessControl": [],
+		"groupsUuidToExcludeFromAccessControl": []
+	}],
+	"settings": {
+	"inHomologation": true,
+	"mailOnHomologation": [],
+		"activePlaces": []
+}
+}

@@ -19,7 +19,7 @@ export class AuthMiddleware implements NestMiddleware {
   ): void {
     if (
       process.env.NODE_ENV === 'production' &&
-      request.originalUrl !== '/health'
+      request.originalUrl !== '/health' && request.originalUrl !== '/accounts'
     ) {
       if (!request.headers['x-hub-signature']) {
         throw new UnauthorizedException();
@@ -34,6 +34,13 @@ export class AuthMiddleware implements NestMiddleware {
       }
       next();
     } else {
+      console.log('request.headers', request.headers)
+      if (
+        request.originalUrl === '/accounts' &&
+        !(request.headers['x-signature'] === process.env.SIGNATURE)
+      ) {
+        throw new UnauthorizedException();
+      }
       next();
     }
   }

@@ -12,6 +12,7 @@ interface ControlidOptions {
   automatedCheckin?: boolean;
   genQrCode?: boolean;
   mailsToExcludeFromAccessControl: string[];
+  groupsUuidToExcludeFromAccessControl: string[];
   mailOnHomologation: string[];
   inHomologation: boolean;
   activePlaces: string[];

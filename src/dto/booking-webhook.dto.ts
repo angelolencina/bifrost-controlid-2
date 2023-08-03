@@ -17,6 +17,7 @@ export class BookingWebhookDto {
       uuid: string;
       name: string;
       email: string;
+      groups?: string[];
     };
     place: {
       uuid: string;

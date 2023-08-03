@@ -22,18 +22,19 @@ export const getActiveModule = () => {
               return { settings: res.settings, integration };
             }
           });
-          console.log(config);
           return {
             activeAccessControl:
               config?.integration.features.includes('access-control'),
             mailsToExcludeFromAccessControl:
-              config?.integration?.mails_to_exclude_from_access_control,
+              config?.integration?.mailsToExcludeFromAccessControl,
+            groupsUuidToExcludeFromAccessControl:
+              config?.integration?.groupsUuidToExcludeFromAccessControl,
             automatedCheckIn:
               config?.integration.features.includes('automated-checkin'),
             genQrCode: config?.integration.features.includes('qr-code'),
-            mailOnHomologation: config?.settings.mail_on_homologation,
-            inHomologation: config?.settings.in_homologation,
-            activePlaces: config?.settings.active_places,
+            mailOnHomologation: config?.settings.mailOnHomologation,
+            inHomologation: config?.settings.inHomologation,
+            activePlaces: config?.settings.activePlaces,
           };
         },
       }),

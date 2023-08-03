@@ -13,6 +13,7 @@ import ControlidRepository from './database/repositories/controlid.repository';
 import { BookingRepository } from '../../database/repositories/booking.repository';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 import ControlidOptions from './interface/controlid-options.interface';
+import { DeskbeeService } from '../../deskbee/deskbee.service';
 
 config();
 
@@ -24,6 +25,7 @@ export class ControlidService {
     private readonly apiControlid: ApiControlid,
     @InjectRepository(BookingEntity)
     private bookingRepository: BookingRepository,
+    private readonly deskbeeService: DeskbeeService,
     private controlidRepository: ControlidRepository,
     private cronService: CronService,
   ) {}
@@ -31,24 +33,36 @@ export class ControlidService {
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
     if (this?.options?.activeAccessControl) {
-      if (
+      const userGroups = await this.getUserGroups(
+        bookingWebhook.included.person.email,
+      );
+      bookingWebhook.included.person.groups = userGroups;
+      let accessControlOff = false;
+
+      const mailInHomologation =
         this.options?.inHomologation &&
         this.options.mailOnHomologation.includes(
           bookingWebhook.included.person.email,
-        )
-      ) {
+        );
+      const excludedEmail =
+        this.options?.mailsToExcludeFromAccessControl.includes(
+          bookingWebhook.included.person.email,
+        );
+      const excludedGroup =
+        this.options.groupsUuidToExcludeFromAccessControl.some((value) =>
+          userGroups.includes(value),
+        );
+      accessControlOff = excludedEmail || excludedGroup;
+
+      if (mailInHomologation || !accessControlOff) {
         this.processAccessControl(bookingWebhook);
         return;
       }
+      if (accessControlOff) {
+        return;
+      }
+      this.processAccessControl(bookingWebhook);
     }
-    if (
-      this.options?.mailsToExcludeFromAccessControl.includes(
-        bookingWebhook.included.person.email,
-      )
-    ) {
-      return;
-    }
-    this.processAccessControl(bookingWebhook);
   }
 
   async processAccessControl(bookingWebhook: BookingWebhookDto) {
@@ -91,5 +105,9 @@ export class ControlidService {
     } catch (error) {
       this.logger.error(`Error on grant access to ${email} => ${error}`);
     }
+  }
+
+  getUserGroups(email: string) {
+    return this.deskbeeService.getUserGroups(email);
   }
 }

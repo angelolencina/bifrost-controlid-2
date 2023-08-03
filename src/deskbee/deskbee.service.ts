@@ -96,6 +96,20 @@ export class DeskbeeService {
       });
   };
 
+  getUserGroups(email: string) {
+    return this.api
+      .get(`/v1.1/users/?search=email:${email}&include=squads`)
+      .then((res) => {
+        if (res?.data?.data?.length > 0) {
+          return res.data.data[0].squads?.map((squad: any) => squad.uuid);
+        }
+      })
+      .catch((e) => {
+        this.logger.error(`Error GetUserGroups: ${e.message}`);
+        return [];
+      });
+  }
+
   async getConfigCredential(): Promise<any> {
     const config = await this.configRepository.findOne({
       where: {

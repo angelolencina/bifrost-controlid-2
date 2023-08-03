@@ -23,8 +23,8 @@ export class IntegrationRequestDto {
   sqlite: SqliteRequestDto;
   @IsOptional()
   @IsArray()
-  mails_to_exclude_from_access_control: string[];
+  mailsToExcludeFromAccessControl: string[];
   @IsOptional()
   @IsArray()
-  groups_to_exclude_from_access_control: string[];
+  groupsUuidToExcludeFromAccessControl: string[];
 }

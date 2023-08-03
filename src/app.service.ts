@@ -59,10 +59,6 @@ export class AppService {
       });
     }
   }
-  async saveToken(response: any) {
-    this.logger.log(`saveToken account: ${this.account}`);
-    console.log('response', response);
-  }
 
   async saveAccount(account: any) {
     this.logger.log(`saveAccount account: ${this.account}`);
@@ -73,5 +69,9 @@ export class AppService {
 
   public getBookings() {
     return this.deskbeeService.searchBookings({});
+  }
+
+  async getUserGroups(email: string) {
+    return this.deskbeeService.getUserGroups(email);
   }
 }

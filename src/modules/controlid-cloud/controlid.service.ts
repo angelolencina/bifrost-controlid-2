@@ -65,21 +65,11 @@ export class ControlidService {
   }
 
   async handleAccessControl(booking: BookingParsedDto) {
-    if (booking.state === 'deleted' || booking.state === 'fall') {
-      await this.blockUserAccess(booking.person.email);
-      booking.setSync(new Date());
-    } else if (isToday(new Date(booking.start_date))) {
-      await this.controlidRepository.unblockUserAccessPerLimitDate(booking);
-      booking.setSync(new Date());
-    }
-    this.bookingRepository.upsert([booking.toJson()], ['uuid']).then(() => {
-      this.logger.log(`Booking : ${booking.uuid} Saved!`);
-    });
-    this.apiControlid.syncAll();
+   
   }
 
   async blockUserAccess(email: string) {
-    await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
+    //await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
     this.apiControlid.syncAll();
   }
 
@@ -117,16 +107,7 @@ export class ControlidService {
       },
     });
     for (const booking of bookings) {
-      if (isToday(new Date(booking.start_date))) {
-        const bookingParsed = BookingParsedDto.buildFromJson(booking);
-        await this.controlidRepository.unblockUserAccessPerLimitDate(
-          bookingParsed,
-        );
-        bookingParsed.setSync(new Date());
-        this.bookingRepository.save(bookingParsed.toJson()).then(() => {
-          this.logger.log(`Booking : ${booking.uuid} Saved!`);
-        });
-      }
+      
     }
     if (bookings?.length) {
       this.logger.log(`Control access: ${bookings?.length} bookings to sync!`);

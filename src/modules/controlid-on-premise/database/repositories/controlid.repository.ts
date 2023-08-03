@@ -82,7 +82,23 @@ export default class ControlidRepository {
     );
   }
 
-  blockUserAccessPerLimitDateByEmail(email: string) {
+  async grantAccessToToday(email: string, start: string, end: string) {
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      this.logger.error(`User not found on controlid: ${email}`);
+    }
+    return this.userRepository.update(
+      { email: email },
+      { dateStartLimit: start, dateLimit: end },
+    );
+  }
+
+  async revokeUserAccess(email: string) {
+    const user = await this.getUserByEmail(email);
+    if (!user) {
+      this.logger.error(`User not found on controlid: ${email}`);
+      return;
+    }
     const lastDay = getLastDayString();
     return this.userRepository.update(
       { email },

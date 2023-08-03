@@ -39,7 +39,7 @@ export class IpremiService {
     const bookingParsed = parseBooking(bookingWebhook);
     console.log(bookingParsed);
     await this.bookingRepository
-      .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
+      .upsert([bookingParsed.toSaveObject()], ['uuid', 'event', 'email'])
       .then(() => {
         this.logger.log(
           `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
@@ -52,7 +52,7 @@ export class IpremiService {
   async handleCheckin(bookingWebhook: BookingWebhookDto) {
     const bookingParsed = parseBooking(bookingWebhook);
     await this.bookingRepository
-      .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
+      .upsert([bookingParsed.toSaveObject()], ['uuid', 'event', 'email'])
       .then(() => {
         this.logger.log(
           `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { BookingWebhookDto } from '../../dto/booking-webhook.dto';
 import { parseBooking } from '../../utils/parse-booking.util';
@@ -12,6 +12,9 @@ import { config } from 'dotenv';
 import { CronService } from './cron.service';
 import { formatDateToDatabase } from '../../utils/format-date.util';
 import ControlidRepository from './database/repositories/controlid.repository';
+import { BookingRepository } from '../../database/repositories/booking.repository';
+import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
+import ControlidOptions from './interface/controlid-options.interface';
 
 config();
 
@@ -22,51 +25,56 @@ export class ControlidService {
   public logger = new Logger('Controlid-On-Premise-Service');
   public accessControl: boolean = ACCESS_CONTROL === 'true';
   constructor(
+    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
     private readonly apiControlid: ApiControlid,
     @InjectRepository(BookingEntity)
-    private bookingRepository: Repository<BookingEntity>,
-    //private controlidRepository: ControlidRepository,
+    private bookingRepository: BookingRepository,
+    private controlidRepository: ControlidRepository,
     private cronService: CronService,
   ) {}
 
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
-    if (this.accessControl) {
+    if (this?.options?.activeAccessControl) {
       this.logger.log(
         `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
       );
-      this.handleAccessControl(parseBooking(bookingWebhook));
+      const newBooking = parseBooking(bookingWebhook).toSaveObject();
+      if (isToday(newBooking.start_date) && newBooking.action === 'created') {
+        const email = bookingWebhook.included.person.email;
+        try {
+          await this.grantUserAccessToday(
+            email,
+            newBooking.start_date,
+            newBooking.end_date,
+          );
+          newBooking.sync_date = formatDateToDatabase(new Date());
+        } catch (error) {
+          this.logger.error(`Error on grant access to ${email} => ${error}`);
+        }
+      }
+      newBooking.sync_date = '';
+      this.bookingRepository.upsert(newBooking, ['uuid', 'event', 'email']);
     }
   }
 
-  async handleAccessControl(booking: BookingParsedDto) {
-    if (booking.state === 'deleted' || booking.state === 'fall') {
-      //await this.blockUserAccess(booking.person.email);
-      this.bookingRepository
-        .update(
-          { uuid: booking.uuid },
-          { sync_date: formatDateToDatabase(new Date()) },
-        )
-        .then(() => {
-          this.logger.log(`Booking : ${booking.uuid} Saved!`);
-        });
-    } else if (isToday(new Date(booking.start_date))) {
-      //await this.controlidRepository.unblockUserAccessPerLimitDate(booking);
-      this.bookingRepository
-        .update(
-          { uuid: booking.uuid },
-          { sync_date: formatDateToDatabase(new Date()) },
-        )
-        .then(() => {
-          this.logger.log(`Booking : ${booking.uuid} Saved!`);
-        });
+  async revokeUserAccess(email: string) {
+    this.logger.log(`Revoke access to last day for ${email}`);
+    try {
+      await this.controlidRepository.revokeUserAccess(email);
+      this.apiControlid.syncAll();
+    } catch (error) {
+      this.logger.error(`Error on revoke access to ${email} => ${error}`);
     }
-
-    this.apiControlid.syncAll();
   }
 
-  async blockUserAccess(email: string) {
-    //await this.controlidRepository.blockUserAccessPerLimitDateByEmail(email);
-    this.apiControlid.syncAll();
+  async grantUserAccessToday(email: string, start: string, end: string) {
+    this.logger.log(`Granting access today for ${email}`);
+    try {
+      await this.controlidRepository.grantAccessToToday(email, start, end);
+      this.apiControlid.syncAll();
+    } catch (error) {
+      this.logger.error(`Error on grant access to ${email} => ${error}`);
+    }
   }
 }

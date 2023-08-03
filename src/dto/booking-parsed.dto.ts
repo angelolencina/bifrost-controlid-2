@@ -129,6 +129,40 @@ export class BookingParsedDto {
       start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
       end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
       tolerance: this.tolerance
+        ? {
+            ...this.tolerance,
+            checkin_max_time: formatDateToDatabase(
+              setDateToLocal(this.tolerance.checkin_max_time),
+            ),
+            checkin_min_time: formatDateToDatabase(
+              setDateToLocal(this.tolerance.checkin_min_time),
+            ),
+          }
+        : undefined,
+      state: this.state,
+      action: this.action,
+      person: this.person,
+      place: this.place,
+      created_at: formatDateToDatabase(setDateToLocal(this.created_at)),
+      updated_at: formatDateToDatabase(this.updated_at),
+      sync_date: this.sync_date
+        ? formatDateToDatabase(setDateToLocal(this.sync_date))
+        : undefined,
+      deleted_at: this.deleted_at
+        ? formatDateToDatabase(setDateToLocal(this.deleted_at))
+        : undefined,
+    };
+  }
+
+  toSaveObject() {
+    return {
+      id: this.id,
+      uuid: this.uuid,
+      event: this.#event,
+      email: this.#email,
+      start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
+      end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
+      tolerance: this.tolerance
         ? JSON.stringify({
             ...this.tolerance,
             checkin_max_time: formatDateToDatabase(

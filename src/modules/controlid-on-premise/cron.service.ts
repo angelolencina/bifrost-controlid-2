@@ -14,13 +14,17 @@ import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 import ControlidOptions from './interface/controlid-options.interface';
+import ControlidRepository from './database/repositories/controlid.repository';
+import { ApiControlid } from './api/controlid.api';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
   constructor(
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
     private readonly deskbeeService: DeskbeeService,
+    private readonly apiControlid: ApiControlid,
     private schedulerRegistry: SchedulerRegistry,
+    private readonly controlidRepository: ControlidRepository,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
     @InjectRepository(EntranceLogEntity)
@@ -31,7 +35,7 @@ export class CronService {
 
   init() {
     if (this.options?.activeAccessControl) {
-      this.addCronJob('accessControl', '0');
+      this.addCronJob('accessControl', '*/30');
     }
     if (this.options?.automatedCheckin) {
       this.addCronJob('automatedCheckIn', '*/30');
@@ -44,7 +48,7 @@ export class CronService {
   addCronJob(name: string, seconds: string) {
     if (name === 'accessControl') {
       const job = new CronJob(`${seconds} * * * * *`, () => {
-        this.checkBookingsForToday();
+        this.checkBookingsToAccessControl();
         this.logger.warn(`time (${seconds}) for job ${name} to run!`);
       });
       this.schedulerRegistry.addCronJob(name, job);
@@ -79,17 +83,16 @@ export class CronService {
   }
 
   automateCheckIn() {
-    // this.controlidRepository.getUserPassLogs().then((logs: any) => {
-    //   logs = logs.map((log: any) => new EntranceDto(log));
-    //   for (const log of logs) {
-    //     this.saveEntranceLog(log);
-    //   }
-    //   const checkIns = logs.map((log: any) => log.toCheckInDto());
-    //   if (checkIns.length > 0) {
-    //     this.deskbeeService.checkInByUser(checkIns);
-    //   }
-    // });
-    
+    this.controlidRepository.getUserPassLogs().then((logs: any) => {
+      logs = logs.map((log: any) => new EntranceDto(log));
+      for (const log of logs) {
+        this.saveEntranceLog(log);
+      }
+      const checkIns = logs.map((log: any) => log.toCheckInDto());
+      if (checkIns.length > 0) {
+        this.deskbeeService.checkInByUser(checkIns);
+      }
+    });
   }
 
   saveEntranceLog(entrance: EntranceDto) {
@@ -100,34 +103,43 @@ export class CronService {
     });
   }
 
-  async checkBookingsForToday() {
-    const bookings = await this.bookingRepository.find({
-      where: {
-        sync_date: IsNull(),
-        start_date: LessThan(
-          formatDateToDatabase(
-            setDateToLocal(addDaysToDate(new Date(), 1)),
-            false,
-          ),
+  async checkBookingsToAccessControl() {
+    const bookings = await this.bookingRepository
+      .createQueryBuilder('bookings')
+      .where('bookings.sync_date IS NULL ')
+      .orWhere('bookings."sync_date" = ""')
+      .andWhere('bookings.start_date < :date', {
+        date: formatDateToDatabase(
+          setDateToLocal(addDaysToDate(new Date(), 1)),
+          false,
         ),
-      },
-    });
+      })
+      .getMany();
     for (const booking of bookings) {
-      if (isToday(new Date(booking.start_date))) {
-        const bookingParsed = BookingParsedDto.buildFromJson(booking);
-        // await this.controlidRepository.unblockUserAccessPerLimitDate(
-        //   bookingParsed,
-        // );
-        bookingParsed.setSync(new Date());
-        this.bookingRepository.save(bookingParsed.toJson()).then(() => {
-          this.logger.log(`Booking : ${booking.uuid} Saved!`);
-        });
+      try {
+        if (isToday(booking.start_date)) {
+          this.grantUserAccessToday(
+            booking.email,
+            booking.start_date,
+            booking.end_date,
+          );
+          booking.sync_date = formatDateToDatabase(new Date());
+          this.bookingRepository.save(booking);
+        }
+      } catch (error) {
+        this.logger.error(error);
       }
     }
-    if (bookings?.length) {
-      this.logger.log(`Control access: ${bookings?.length} bookings to sync!`);
-    } else {
-      this.logger.log(`Control access: No bookings to sync!`);
+    this.apiControlid.syncAll();
+  }
+
+  async grantUserAccessToday(email: string, start: string, end: string) {
+    this.logger.log(`Granting access today for ${email}`);
+    try {
+      await this.controlidRepository.grantAccessToToday(email, start, end);
+      this.apiControlid.syncAll();
+    } catch (error) {
+      this.logger.error(`Error on grant access to ${email} => ${error}`);
     }
   }
 }

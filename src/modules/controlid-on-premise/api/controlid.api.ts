@@ -42,8 +42,8 @@ export class ApiControlid implements ControlidApiInterface {
       .post(`${ApiControlid.baseUrl}/login`, body, config)
       .then((res) => `Bearer ${res.data.accessToken}`)
       .catch((e) => {
-        _logger.error(`Error when get bearer token ${e?.message}`);
-        throw new Error(`Error when get bearer token ${e?.message}`);
+        _logger.error(`Erro to Get Token Controlid ${e?.message}`);
+        throw new Error(`Erro to Get Token Controlid ${e?.message}`);
       });
   };
   createUserQrCode(userId: number) {

@@ -73,7 +73,6 @@ export const getDataBaseConfig = (integration: IIntegration): any => {
         Operatortypemodules,
         Operatortypes,
         Templates,
-        
       ],
       autoLoadEntities: true,
     };
@@ -94,6 +93,7 @@ export const getDataBaseConfig = (integration: IIntegration): any => {
     TypeOrmModule.forRootAsync({
       imports: [TypeOrmModule.forFeature([AccountEntity])],
       inject: [getRepositoryToken(AccountEntity)],
+      name: 'controlid',
       useFactory: async (accountRepository: Repository<AccountEntity>) => {
         const integration = await accountRepository
           .find()

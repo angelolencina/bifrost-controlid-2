@@ -9,7 +9,7 @@ export class ApiControlid implements ControlidApiInterface {
   static baseUrl: string = process.env.CONTROLID_API || '';
   constructor() {
     this.api = axios.create({
-      baseURL: ApiControlid.baseUrl,
+      baseURL: process.env.CONTROLID_API,
       headers: { 'Content-Type': `application/json; charset=UTF-8` },
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
@@ -39,7 +39,7 @@ export class ApiControlid implements ControlidApiInterface {
       }),
     };
     return axios
-      .post(`${ApiControlid.baseUrl}/login`, body, config)
+      .post(`${process.env.CONTROLID_API}/login`, body, config)
       .then((res) => `Bearer ${res.data.accessToken}`)
       .catch((e) => {
         _logger.error(`Erro to Get Token Controlid ${e?.message}`);
@@ -65,6 +65,7 @@ export class ApiControlid implements ControlidApiInterface {
     });
   }
   syncAll() {
+    this.logger.log(`Sync all users on controlId`);
     return this.api.get(`/util/SyncAll`).catch((e: any) => {
       this.logger.error(
         `Error when sync all users on controlId  ${e?.message}`,

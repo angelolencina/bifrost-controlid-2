@@ -38,7 +38,7 @@ export class Devicerelays {
   @Column('bigint', { name: 'idParking', nullable: true })
   idParking: string | null;
 
-  @Column('bit', { name: 'urn' })
+  @Column('boolean', { name: 'urn' })
   urn: boolean;
 
   @Column('varchar', { name: 'interlocks', nullable: true, length: 50 })
@@ -56,10 +56,10 @@ export class Devicerelays {
   @Column('varchar', { name: 'buttonHoleNo', nullable: true, length: 50 })
   buttonHoleNo: string | null;
 
-  @Column('bit', { name: 'allowVisitorMainReader' })
+  @Column('boolean', { name: 'allowVisitorMainReader' })
   allowVisitorMainReader: boolean;
 
-  @Column('bit', { name: 'unbindCardMainReader' })
+  @Column('boolean', { name: 'unbindCardMainReader' })
   unbindCardMainReader: boolean;
 
   @ManyToOne(() => Devices, (devices) => devices.devicerelays, {

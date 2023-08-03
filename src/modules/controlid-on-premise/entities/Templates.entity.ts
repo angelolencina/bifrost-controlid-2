@@ -17,7 +17,7 @@ export class Templates {
   @Column('bigint', { name: 'idUser' })
   idUser: string;
 
-  @Column('bit', { name: 'panic' })
+  @Column('boolean', { name: 'panic' })
   panic: boolean;
 
   @Column('int', { name: 'idType' })

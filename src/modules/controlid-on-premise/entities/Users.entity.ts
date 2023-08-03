@@ -54,16 +54,16 @@ export class Users {
   @Column('varchar', { name: 'salt', nullable: true, length: 50 })
   salt: string | null;
 
-  @Column('bit', { name: 'admin' })
+  @Column('boolean', { name: 'admin' })
   admin: boolean;
 
-  @Column('bit', { name: 'inativo' })
+  @Column('boolean', { name: 'inativo' })
   inativo: boolean;
 
-  @Column('bit', { name: 'contingency' })
+  @Column('boolean', { name: 'contingency' })
   contingency: boolean;
 
-  @Column('bit', { name: 'deleted' })
+  @Column('boolean', { name: 'deleted' })
   deleted: boolean;
 
   @Column('bigint', { name: 'idDevice', nullable: true })
@@ -75,10 +75,10 @@ export class Users {
   @Column('int', { name: 'photoIdFaceState', nullable: true })
   photoIdFaceState: number | null;
 
-  @Column('bit', { name: 'photoDeleted', nullable: true })
+  @Column('boolean', { name: 'photoDeleted', nullable: true })
   photoDeleted: boolean | null;
 
-  @Column('bit', { name: 'canUseFacial' })
+  @Column('boolean', { name: 'canUseFacial' })
   canUseFacial: boolean;
 
   @Column('varchar', { name: 'endereco', nullable: true, length: 50 })
@@ -150,13 +150,13 @@ export class Users {
   @Column('datetime', { name: 'dateLimit', nullable: true })
   dateLimit: Date | null;
 
-  @Column('bit', { name: 'expireOnDateLimit' })
+  @Column('boolean', { name: 'expireOnDateLimit' })
   expireOnDateLimit: boolean;
 
   @Column('varchar', { name: 'visitorCompany', nullable: true, length: 100 })
   visitorCompany: string | null;
 
-  @Column('bit', { name: 'blackList' })
+  @Column('boolean', { name: 'blackList' })
   blackList: boolean;
 
   @Column('datetime', { name: 'dateStartLimit', nullable: true })
@@ -168,7 +168,7 @@ export class Users {
   @Column('varchar', { name: 'comments', nullable: true, length: 500 })
   comments: string | null;
 
-  @Column('bit', { name: 'allowParkingSpotCompany', nullable: true })
+  @Column('boolean', { name: 'allowParkingSpotCompany', nullable: true })
   allowParkingSpotCompany: boolean | null;
 
   @Column('bigint', { name: 'idArea' })

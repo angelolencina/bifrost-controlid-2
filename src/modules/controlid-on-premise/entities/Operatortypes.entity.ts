@@ -9,13 +9,13 @@ export class Operatortypes {
   @Column('varchar', { name: 'name', nullable: true, length: 50 })
   name: string | null;
 
-  @Column('bit', { name: 'restrictGroups', default: () => "'b'0''" })
+  @Column('boolean', { name: 'restrictGroups', default: () => "'b'0''" })
   restrictGroups: boolean;
 
-  @Column('bit', { name: 'allowVisitors', default: () => "'b'0''" })
+  @Column('boolean', { name: 'allowVisitors', default: () => "'b'0''" })
   allowVisitors: boolean;
 
-  @Column('bit', { name: 'allowPersons', default: () => "'b'0''" })
+  @Column('boolean', { name: 'allowPersons', default: () => "'b'0''" })
   allowPersons: boolean;
 
   @OneToMany(

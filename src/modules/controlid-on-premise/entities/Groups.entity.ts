@@ -11,16 +11,16 @@ export class Groups {
   @Column('varchar', { name: 'name', nullable: true, length: 200 })
   name: string | null;
 
-  @Column('bit', { name: 'disableADE' })
+  @Column('boolean', { name: 'disableADE' })
   disableAde: boolean;
 
-  @Column('bit', { name: 'controlVisitors' })
+  @Column('boolean', { name: 'controlVisitors' })
   controlVisitors: boolean;
 
   @Column('bigint', { name: 'maxVisitors' })
   maxVisitors: string;
 
-  @Column('bit', { name: 'contingency', nullable: true })
+  @Column('boolean', { name: 'contingency', nullable: true })
   contingency: boolean | null;
 
   @Column('int', { name: 'maxTimeInside', nullable: true })

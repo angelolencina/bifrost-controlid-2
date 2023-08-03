@@ -44,7 +44,7 @@ export class Logs {
   @Column('varchar', { name: 'area', nullable: true, length: 50 })
   area: string | null;
 
-  @Column('bit', { name: 'isVehicle', nullable: true })
+  @Column('boolean', { name: 'isVehicle', nullable: true })
   isVehicle: boolean | null;
 
   @Column('bigint', { name: 'idParking', nullable: true })

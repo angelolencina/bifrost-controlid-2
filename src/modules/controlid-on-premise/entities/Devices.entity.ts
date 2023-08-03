@@ -15,7 +15,7 @@ export class Devices {
   @Column('int', { name: 'port' })
   port: number;
 
-  @Column('bit', { name: 'ssl' })
+  @Column('boolean', { name: 'ssl' })
   ssl: boolean;
 
   @Column('varchar', { name: 'user', nullable: true, length: 50 })
@@ -27,7 +27,7 @@ export class Devices {
   @Column('int', { name: 'model' })
   model: number;
 
-  @Column('bit', { name: 'beep' })
+  @Column('boolean', { name: 'beep' })
   beep: boolean;
 
   @Column('varchar', { name: 'leds', nullable: true, length: 50 })
@@ -39,19 +39,19 @@ export class Devices {
   @Column('int', { name: 'operationMode' })
   operationMode: number;
 
-  @Column('bit', { name: 'antiPassback' })
+  @Column('boolean', { name: 'antiPassback' })
   antiPassback: boolean;
 
-  @Column('bit', { name: 'dailyReset' })
+  @Column('boolean', { name: 'dailyReset' })
   dailyReset: boolean;
 
-  @Column('bit', { name: 'vehicleControl' })
+  @Column('boolean', { name: 'vehicleControl' })
   vehicleControl: boolean;
 
   @Column('int', { name: 'bellRelay' })
   bellRelay: number;
 
-  @Column('bit', { name: 'urn' })
+  @Column('boolean', { name: 'urn' })
   urn: boolean;
 
   @Column('varchar', { name: 'serial', nullable: true, length: 20 })
@@ -72,7 +72,7 @@ export class Devices {
   @Column('varchar', { name: 'status', nullable: true, length: 100 })
   status: string | null;
 
-  @Column('bit', { name: 'panicCard' })
+  @Column('boolean', { name: 'panicCard' })
   panicCard: boolean;
 
   @Column('datetime', { name: 'dateLastLog', nullable: true })
@@ -81,16 +81,16 @@ export class Devices {
   @Column('datetime', { name: 'dateLastOnline', nullable: true })
   dateLastOnline: Date | null;
 
-  @Column('bit', { name: 'isCurrentlyOnline' })
+  @Column('boolean', { name: 'isCurrentlyOnline' })
   isCurrentlyOnline: boolean;
 
-  @Column('bit', { name: 'disableAntiPassback' })
+  @Column('boolean', { name: 'disableAntiPassback' })
   disableAntiPassback: boolean;
 
-  @Column('bit', { name: 'disableUsb' })
+  @Column('boolean', { name: 'disableUsb' })
   disableUsb: boolean;
 
-  @Column('bit', { name: 'keepUserImages' })
+  @Column('boolean', { name: 'keepUserImages' })
   keepUserImages: boolean;
 
   @Column('int', { name: 'ResetCount' })
@@ -117,13 +117,13 @@ export class Devices {
   @Column('bigint', { name: 'sameFaceDetectionInterval', nullable: true })
   sameFaceDetectionInterval: string | null;
 
-  @Column('bit', { name: 'limitIdentificationArea', nullable: true })
+  @Column('boolean', { name: 'limitIdentificationArea', nullable: true })
   limitIdentificationArea: boolean | null;
 
-  @Column('bit', { name: 'strictLiveness', nullable: true })
+  @Column('boolean', { name: 'strictLiveness', nullable: true })
   strictLiveness: boolean | null;
 
-  @Column('bit', { name: 'vehicleDetection', nullable: true })
+  @Column('boolean', { name: 'vehicleDetection', nullable: true })
   vehicleDetection: boolean | null;
 
   @Column('int', { name: 'rtspPort', nullable: true })

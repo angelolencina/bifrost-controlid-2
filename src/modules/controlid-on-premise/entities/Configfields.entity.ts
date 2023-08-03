@@ -5,10 +5,10 @@ export class Configfields {
   @PrimaryGeneratedColumn({ type: 'bigint', name: 'Id' })
   id: string;
 
-  @Column('bit', { name: 'Required' })
+  @Column('boolean', { name: 'Required' })
   required: boolean;
 
-  @Column('bit', { name: 'ExpiresUser' })
+  @Column('boolean', { name: 'ExpiresUser' })
   expiresUser: boolean;
 
   @Column('varchar', { name: 'TypeField', nullable: true, length: 4000 })

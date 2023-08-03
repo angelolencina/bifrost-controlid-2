@@ -23,13 +23,15 @@ export const getActiveModule = () => {
                 );
               }
             });
-            console.log(integration);
           return {
             activeAccessControl:
               integration.features.includes('access-control'),
             automatedCheckIn:
               integration.features.includes('automated-checkin'),
             genQrCode: integration.features.includes('qr-code'),
+            mailOnHomologation: integration.settings.mail_on_homologation,
+            inHomologation: integration.settings.in_homologation,
+            activePlaces: integration.settings.active_places,
           };
         },
       }),

@@ -11,6 +11,7 @@ export class AccountRequestDto {
   @Type(() => IntegrationRequestDto)
   integration: IntegrationRequestDto[];
   @IsNotEmpty()
+  @ValidateNested()
   @Type(() => SettingsRequestDto)
   settings: SettingsRequestDto;
 }

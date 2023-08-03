@@ -26,6 +26,8 @@ export const getActiveModule = () => {
           return {
             activeAccessControl:
               config?.integration.features.includes('access-control'),
+            mailsToExcludeFromAccessControl:
+              config?.integration?.mails_to_exclude_from_access_control,
             automatedCheckIn:
               config?.integration.features.includes('automated-checkin'),
             genQrCode: config?.integration.features.includes('qr-code'),

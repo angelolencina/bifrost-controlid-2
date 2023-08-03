@@ -2,11 +2,10 @@ import { Inject, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BookingEntity } from '../../entities/booking.entity';
-import { IsNull, LessThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CronJob } from 'cron';
 import { EntranceDto } from '../../dto/entrance.dto';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
-import { BookingParsedDto } from '../../dto/booking-parsed.dto';
 import { addDaysToDate } from '../../utils/add-days-to-date';
 import { formatDateToDatabase } from '../../utils/format-date.util';
 import { isToday } from '../../utils/is-today.util';
@@ -36,6 +35,7 @@ export class CronService {
   init() {
     if (this.options?.activeAccessControl) {
       this.addCronJob('accessControl', '*/30');
+      this.addCronJob('getBookingsToCurrentDay', '*/30');
     }
     if (this.options?.automatedCheckin) {
       this.addCronJob('automatedCheckIn', '*/30');
@@ -55,6 +55,18 @@ export class CronService {
       job.start();
       this.logger.warn(
         `job ${name} added for each minute at ${seconds} seconds!`,
+      );
+
+      const job2 = new CronJob(`*/50 * * * * *`, () => {
+        this.searchBookingsToCurrentDay();
+        this.logger.warn(
+          `time each minute for job checkingBookingsToCurrentDay to run!`,
+        );
+      });
+      this.schedulerRegistry.addCronJob('checkingBookingsToCurrentDay', job2);
+      job2.start();
+      this.logger.warn(
+        `job checkingBookingsToCurrentDay added for each minute`,
       );
     }
 
@@ -116,6 +128,11 @@ export class CronService {
       })
       .getMany();
     for (const booking of bookings) {
+      if (
+        this.options.mailsToExcludeFromAccessControl.includes(booking.email)
+      ) {
+        return;
+      }
       try {
         if (isToday(booking.start_date)) {
           this.grantUserAccessToday(
@@ -133,6 +150,78 @@ export class CronService {
     this.apiControlid.syncAll();
   }
 
+  async searchBookingsToCurrentDay() {
+    const bookings = await this.deskbeeService.searchBookings({});
+    this.prepareToHandler(bookings);
+  }
+
+  public async prepareToHandler(bookings: any[]) {
+    for (const booking of bookings) {
+      const email = booking.person.email;
+      if (
+        this.options?.inHomologation &&
+        this.options.mailOnHomologation.includes(email)
+      ) {
+        this.processAccessControl(booking);
+        return;
+      }
+      if (this.options.mailsToExcludeFromAccessControl.includes(email)) {
+        return;
+      }
+      this.processAccessControl(booking);
+    }
+  }
+
+  async processAccessControl(booking: any) {
+    const email = booking.person.email;
+    const hasBooking = await this.bookingRepository.findOne({
+      where: { uuid: booking.uuid },
+    });
+    if (!hasBooking?.uuid) {
+      const action =
+        booking.state == 'fall' || booking.state == 'deleted'
+          ? 'deleted'
+          : 'created';
+      const _booking = {
+        uuid: booking.uuid,
+        start_date: formatDateToDatabase(
+          setDateToLocal(new Date(booking.start_date)),
+        ),
+        end_date: formatDateToDatabase(
+          setDateToLocal(new Date(booking.end_date)),
+        ),
+        state: booking.state,
+        action,
+        event: 'booking',
+        email: email,
+        person: JSON.stringify(booking.person),
+        place: JSON.stringify(booking.place),
+        min_tolerance: booking?.min_tolerance,
+        sync_date: '',
+      };
+      if (action === 'created') {
+        try {
+          await this.grantUserAccessToday(
+            email,
+            _booking.start_date,
+            _booking.end_date,
+          );
+          _booking.sync_date = formatDateToDatabase(new Date());
+        } catch (error) {
+          this.logger.error(`Error on grant access to ${email} => ${error}`);
+        }
+      } else {
+        try {
+          await this.revokeUserAccess(email);
+          _booking.sync_date = formatDateToDatabase(new Date());
+        } catch (error) {
+          this.logger.error(`Error on revoke access to ${email} => ${error}`);
+        }
+      }
+      this.bookingRepository.upsert(_booking, ['uuid', 'event', 'email']);
+    }
+  }
+
   async grantUserAccessToday(email: string, start: string, end: string) {
     this.logger.log(`Granting access today for ${email}`);
     try {
@@ -140,6 +229,16 @@ export class CronService {
       this.apiControlid.syncAll();
     } catch (error) {
       this.logger.error(`Error on grant access to ${email} => ${error}`);
+    }
+  }
+
+  async revokeUserAccess(email: string) {
+    this.logger.log(`Revoke access to last day for ${email}`);
+    try {
+      await this.controlidRepository.revokeUserAccess(email);
+      this.apiControlid.syncAll();
+    } catch (error) {
+      this.logger.error(`Error on revoke access to ${email} => ${error}`);
     }
   }
 }

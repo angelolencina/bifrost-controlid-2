@@ -21,4 +21,10 @@ export class IntegrationRequestDto {
   @ValidateNested()
   @Type(() => SqliteRequestDto)
   sqlite: SqliteRequestDto;
+  @IsOptional()
+  @IsArray()
+  mails_to_exclude_from_access_control: string[];
+  @IsOptional()
+  @IsArray()
+  groups_to_exclude_from_access_control: string[];
 }

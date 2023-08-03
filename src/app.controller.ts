@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service';
@@ -24,5 +24,10 @@ export class AppController {
   @Post('accounts')
   saveAccount(@Body() payload: AccountRequestDto) {
     return this.appService.saveAccount(payload);
+  }
+
+  @Get('bookings')
+  getBookings() {
+    return this.appService.getBookings();
   }
 }

@@ -7,6 +7,14 @@ import { isValidToken } from '../utils/is-token-expired.util';
 import { AxiosInstance } from 'axios';
 import { CheckInDto } from '../dto/checkin.dto';
 import { PersonalBadgeDto } from '../dto/personal-badge.dto';
+import { sortByStartDateDesc } from '../utils/sort-by-date.util';
+
+type TSearchBookings = {
+  search?: string;
+  limit?: number;
+  url?: string;
+  _bookings?: any[];
+};
 
 @Injectable()
 export class DeskbeeService {
@@ -39,6 +47,31 @@ export class DeskbeeService {
         throw new Error(`Error GetBooking: ${e.message}`);
       });
   };
+
+  public async searchBookings({
+    search = '',
+    limit = 400,
+    url,
+    _bookings = [],
+  }: TSearchBookings): Promise<any> {
+    const bookings = _bookings;
+    const urlDefault = `/v1.1/bookings?search=${search}&limit=${limit}&include=checkin;min_tolerance;squads`;
+    url = !!url ? url : urlDefault;
+    const data = await this.api.get(url).then((res) => res.data);
+
+    if (data?.data?.length > 0) {
+      bookings.push(...data.data);
+    }
+
+    if (data?.links?.next) {
+      return this.searchBookings({
+        limit: 400,
+        url: data?.links?.next,
+        _bookings: bookings,
+      });
+    }
+    return bookings?.length ? sortByStartDateDesc(bookings) : [];
+  }
 
   savePersonalBadge = (personalBadgeDto: PersonalBadgeDto[]) => {
     return this.api
@@ -76,7 +109,6 @@ export class DeskbeeService {
   }
 
   async getToken(): Promise<string | undefined> {
-    this.logger.log(`getToken account: ${this.account}`);
     const config = await this.getConfigCredential();
     const credential = config?.credential ?? this.getEnvCredential();
 

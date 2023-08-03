@@ -3,8 +3,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { BookingWebhookDto } from '../../dto/booking-webhook.dto';
 import { parseBooking } from '../../utils/parse-booking.util';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { BookingParsedDto } from '../../dto/booking-parsed.dto';
 import { BookingEntity } from '../../entities/booking.entity';
 import { isToday } from '../../utils/is-today.util';
 import { ApiControlid } from './api/controlid.api';
@@ -18,12 +16,9 @@ import ControlidOptions from './interface/controlid-options.interface';
 
 config();
 
-const { ACCESS_CONTROL } = process.env;
-
 @Injectable()
 export class ControlidService {
   public logger = new Logger('Controlid-On-Premise-Service');
-  public accessControl: boolean = ACCESS_CONTROL === 'true';
   constructor(
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
     private readonly apiControlid: ApiControlid,
@@ -36,26 +31,46 @@ export class ControlidService {
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
     if (this?.options?.activeAccessControl) {
-      this.logger.log(
-        `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
-      );
-      const newBooking = parseBooking(bookingWebhook).toSaveObject();
-      if (isToday(newBooking.start_date) && newBooking.action === 'created') {
-        const email = bookingWebhook.included.person.email;
-        try {
-          await this.grantUserAccessToday(
-            email,
-            newBooking.start_date,
-            newBooking.end_date,
-          );
-          newBooking.sync_date = formatDateToDatabase(new Date());
-        } catch (error) {
-          this.logger.error(`Error on grant access to ${email} => ${error}`);
-        }
+      if (
+        this.options?.inHomologation &&
+        this.options.mailOnHomologation.includes(
+          bookingWebhook.included.person.email,
+        )
+      ) {
+        this.processAccessControl(bookingWebhook);
+        return;
       }
-      newBooking.sync_date = '';
-      this.bookingRepository.upsert(newBooking, ['uuid', 'event', 'email']);
     }
+    if (
+      this.options?.mailsToExcludeFromAccessControl.includes(
+        bookingWebhook.included.person.email,
+      )
+    ) {
+      return;
+    }
+    this.processAccessControl(bookingWebhook);
+  }
+
+  async processAccessControl(bookingWebhook: BookingWebhookDto) {
+    this.logger.log(
+      `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
+    );
+    const newBooking = parseBooking(bookingWebhook).toSaveObject();
+    if (isToday(newBooking.start_date) && newBooking.action === 'created') {
+      const email = bookingWebhook.included.person.email;
+      try {
+        await this.grantUserAccessToday(
+          email,
+          newBooking.start_date,
+          newBooking.end_date,
+        );
+        newBooking.sync_date = formatDateToDatabase(new Date());
+      } catch (error) {
+        this.logger.error(`Error on grant access to ${email} => ${error}`);
+      }
+    }
+    newBooking.sync_date = '';
+    this.bookingRepository.upsert(newBooking, ['uuid', 'event', 'email']);
   }
 
   async revokeUserAccess(email: string) {

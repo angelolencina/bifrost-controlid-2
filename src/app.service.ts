@@ -6,6 +6,7 @@ import { apiDeskbee, getBearerToken } from './apis/deskbee-base.api';
 import { isValidToken } from './utils/is-token-expired.util';
 import { AccountEntity } from './entities/account.entity';
 import AccountFactory from './factory/account.factory';
+import { DeskbeeService } from './deskbee/deskbee.service';
 
 @Injectable()
 export class AppService {
@@ -16,10 +17,12 @@ export class AppService {
     private configRepository: Repository<ConfigurationEntity>,
     @InjectRepository(AccountEntity)
     private accountRepository: Repository<AccountEntity>,
+    private readonly deskbeeService: DeskbeeService,
   ) {
     apiDeskbee.interceptors.request.use(
       async (config) => {
-        config.headers['Authorization'] = await this.getToken();
+        const token = await this.getToken();
+        config.headers['Authorization'] = `Bearer ${token}`;
         return config;
       },
       function (error) {
@@ -37,7 +40,6 @@ export class AppService {
   }
 
   async getToken() {
-    this.logger.log(`getToken account: ${this.account}`);
     const config = await this.getConfigCredential();
     if (config) {
       if (isValidToken(config.token_expires_in)) {
@@ -53,7 +55,7 @@ export class AppService {
             ).toISOString(),
           },
         );
-        return `Bearer ${res.data.access_token}`;
+        return res.data.access_token;
       });
     }
   }
@@ -67,5 +69,9 @@ export class AppService {
     account = AccountFactory.createAccount(account);
     await this.accountRepository.upsert([account.toJson()], ['code']);
     return this.accountRepository.findOne({ where: { code: account.code } });
+  }
+
+  public getBookings() {
+    return this.deskbeeService.searchBookings({});
   }
 }

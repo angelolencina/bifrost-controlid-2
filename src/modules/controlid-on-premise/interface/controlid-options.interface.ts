@@ -11,6 +11,10 @@ interface ControlidOptions {
   activeAccessControl?: boolean;
   automatedCheckin?: boolean;
   genQrCode?: boolean;
+  mailsToExcludeFromAccessControl: string[];
+  mailOnHomologation: string[];
+  inHomologation: boolean;
+  activePlaces: string[];
 }
 
 export default ControlidOptions;

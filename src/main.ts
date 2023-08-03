@@ -1,8 +1,9 @@
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
+import { useContainer as useContainerValidator } from 'class-validator';
 
 import * as bodyParser from 'body-parser';
 
@@ -15,6 +16,8 @@ async function bootstrap() {
   };
   app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
   app.use(bodyParser.json({ verify: rawBodyBuffer }));
+  useContainerValidator(app.select(AppModule), { fallbackOnErrors: true });
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
   const port = process.env.PORT || 3000;
   const configService = app.get(ConfigService);
   const user = configService.get('RABBITMQ_USER');

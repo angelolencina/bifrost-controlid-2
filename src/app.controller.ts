@@ -2,6 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service';
+import { AccountRequestDto } from './dto/account-request.dto';
 
 @Controller()
 export class AppController {
@@ -21,7 +22,7 @@ export class AppController {
   }
 
   @Post('accounts')
-  saveAccount(@Body() payload: any) {
+  saveAccount(@Body() payload: AccountRequestDto) {
     return this.appService.saveAccount(payload);
   }
 }

@@ -21,6 +21,7 @@ export class Account {
   }
 
   get settings(): ISettings {
+    console.log()
     return JSON.parse(this.#settings);
   }
 

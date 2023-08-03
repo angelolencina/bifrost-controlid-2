@@ -23,6 +23,7 @@ export const getActiveModule = () => {
                 );
               }
             });
+            console.log(integration);
           return {
             activeAccessControl:
               integration.features.includes('access-control'),

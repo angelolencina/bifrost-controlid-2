@@ -15,6 +15,7 @@ import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant
 import ControlidOptions from './interface/controlid-options.interface';
 import ControlidRepository from './database/repositories/controlid.repository';
 import { ApiControlid } from './api/controlid.api';
+import { CheckInDto } from '../../dto/checkin.dto';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
@@ -100,7 +101,9 @@ export class CronService {
     for (const log of logs) {
       this.saveEntranceLog(log);
     }
-    const checkIns = logs.map((log: any) => log.toCheckInDto());
+    const checkIns: CheckInDto[] = logs.map((log: EntranceDto) =>
+      log.toCheckInDto(),
+    );
     if (checkIns.length > 0) {
       this.deskbeeService.checkInByUser(checkIns);
     }

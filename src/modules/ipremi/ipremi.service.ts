@@ -37,7 +37,6 @@ export class IpremiService {
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
     const bookingParsed = parseBooking(bookingWebhook);
-    console.log(bookingParsed);
     await this.bookingRepository
       .upsert([bookingParsed.toSaveObject()], ['uuid', 'event', 'email'])
       .then(() => {

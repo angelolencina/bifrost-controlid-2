@@ -1,5 +1,5 @@
 export class CheckInDto {
-  device: string;
+  device: string | number;
   person: string;
   date: string;
   entrance: number;

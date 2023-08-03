@@ -21,14 +21,13 @@ export class Account {
   }
 
   get settings(): ISettings {
-    console.log()
     return JSON.parse(this.#settings);
   }
 
   get integration(): IIntegration[] {
     return JSON.parse(this.#integration);
   }
-  
+
   toJson() {
     return {
       code: this.code,

@@ -14,24 +14,24 @@ export const getActiveModule = () => {
       ControlidModule.registerAsync({
         inject: [getRepositoryToken(AccountEntity)],
         useFactory: async (accountRepository: Repository<AccountEntity>) => {
-          const integration = await accountRepository
-            .find()
-            .then(([res]: any) => {
-              if (res?.integration) {
-                return res?.integration?.find(
-                  (row: any) => row?.name === 'controlid-on-premise',
-                );
-              }
-            });
+          const config = await accountRepository.find().then(([res]: any) => {
+            if (res?.integration) {
+              const integration = res?.integration?.find(
+                (row: any) => row?.name === 'controlid-on-premise',
+              );
+              return { settings: res.settings, integration };
+            }
+          });
+          console.log(config);
           return {
             activeAccessControl:
-              integration.features.includes('access-control'),
+              config?.integration.features.includes('access-control'),
             automatedCheckIn:
-              integration.features.includes('automated-checkin'),
-            genQrCode: integration.features.includes('qr-code'),
-            mailOnHomologation: integration.settings.mail_on_homologation,
-            inHomologation: integration.settings.in_homologation,
-            activePlaces: integration.settings.active_places,
+              config?.integration.features.includes('automated-checkin'),
+            genQrCode: config?.integration.features.includes('qr-code'),
+            mailOnHomologation: config?.settings.mail_on_homologation,
+            inHomologation: config?.settings.in_homologation,
+            activePlaces: config?.settings.active_places,
           };
         },
       }),

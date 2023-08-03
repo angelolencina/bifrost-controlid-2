@@ -8,6 +8,7 @@ import { AxiosInstance } from 'axios';
 import { CheckInDto } from '../dto/checkin.dto';
 import { PersonalBadgeDto } from '../dto/personal-badge.dto';
 import { sortByStartDateDesc } from '../utils/sort-by-date.util';
+import { AccountEntity } from '../entities/account.entity';
 
 type TSearchBookings = {
   search?: string;
@@ -19,11 +20,12 @@ type TSearchBookings = {
 @Injectable()
 export class DeskbeeService {
   private readonly logger = new Logger(DeskbeeService.name);
-  private readonly account = process.env.ACCOUNT;
   private readonly api: AxiosInstance = apiDeskbee;
   constructor(
     @InjectRepository(ConfigurationEntity)
     private configRepository: Repository<ConfigurationEntity>,
+    @InjectRepository(AccountEntity)
+    private accountRepository: Repository<AccountEntity>,
   ) {
     apiDeskbee.interceptors.request.use(
       async (config) => {
@@ -111,9 +113,11 @@ export class DeskbeeService {
   }
 
   async getConfigCredential(): Promise<any> {
+    const [account] = await this.accountRepository.find();
+    if (!account) throw new Error('Account not found');
     const config = await this.configRepository.findOne({
       where: {
-        account: this.account,
+        account: account.code,
       },
     });
     if (!config) {
@@ -131,8 +135,10 @@ export class DeskbeeService {
     }
 
     return getBearerToken(credential).then(async (res) => {
+      const [account] = await this.accountRepository.find();
+      if (!account) throw new Error('Account not found');
       await this.configRepository.update(
-        { account: this.account },
+        { account: account.code },
         {
           token: res.access_token,
           token_expires_in: new Date(
@@ -146,8 +152,10 @@ export class DeskbeeService {
 
   async saveConfigCredential(): Promise<any> {
     this.logger.log('saving new credential');
+    const [account] = await this.accountRepository.find();
+    if (!account) throw new Error('Account not found');
     return this.configRepository.save({
-      account: this.account,
+      account: account.code,
       credential: JSON.stringify(this.getEnvCredential()),
     });
   }

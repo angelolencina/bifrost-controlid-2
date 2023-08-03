@@ -8,6 +8,7 @@ import { getLastDayString } from '../../../../utils/get-last-day-string.util';
 import { setDateToLocal } from '../../../../utils/set-date-to-local.util';
 import { Users } from '../../entities/Users.entity';
 import { Cards } from '../../entities/Cards.entity';
+import { Logs } from '../../entities/Logs.entity';
 
 @Injectable()
 export default class ControlidRepository {
@@ -19,6 +20,8 @@ export default class ControlidRepository {
     private userRepository: Repository<Users>,
     @InjectRepository(Cards, 'controlid')
     private cardRepository: Repository<Cards>,
+    @InjectRepository(Logs, 'controlid')
+    private logsRepository: Repository<Logs>,
   ) {}
 
   saveUserCard(userId: string, identification: number) {
@@ -111,11 +114,11 @@ export default class ControlidRepository {
     const lastLogDate = lastLog?.created_at
       ? formatDateToDatabase(setDateToLocal(new Date(lastLog.created_at)))
       : getLastDayString();
-    return this.userRepository
+    return this.logsRepository
       .createQueryBuilder('logs')
       .innerJoin('users', 'u', 'u.id = logs.idUser')
       .where(
-        'u.deleted = false and email is not null and logs.event = 7 and logs.time > :lastLogDate',
+        'u.deleted = false and u.email is not null and logs.event = 7 and logs.time > :lastLogDate',
         { lastLogDate },
       )
       .getMany();

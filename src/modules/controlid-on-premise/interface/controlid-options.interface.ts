@@ -9,7 +9,7 @@ interface ControlidOptions {
   apiUser?: string;
   apiPassword?: string;
   activeAccessControl?: boolean;
-  automatedCheckin?: boolean;
+  automatedCheckIn?: boolean;
   genQrCode?: boolean;
   mailsToExcludeFromAccessControl: string[];
   groupsUuidToExcludeFromAccessControl: string[];

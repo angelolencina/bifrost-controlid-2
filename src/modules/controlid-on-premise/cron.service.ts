@@ -37,7 +37,7 @@ export class CronService {
       this.addCronJob('accessControl', '*/30');
       this.addCronJob('getBookingsToCurrentDay', '*/30');
     }
-    if (this.options?.automatedCheckin) {
+    if (this.options?.automatedCheckIn) {
       this.addCronJob('automatedCheckIn', '*/30');
     }
     if (this.options?.genQrCode) {
@@ -94,17 +94,16 @@ export class CronService {
     }
   }
 
-  automateCheckIn() {
-    this.controlidRepository.getUserPassLogs().then((logs: any) => {
-      logs = logs.map((log: any) => new EntranceDto(log));
-      for (const log of logs) {
-        this.saveEntranceLog(log);
-      }
-      const checkIns = logs.map((log: any) => log.toCheckInDto());
-      if (checkIns.length > 0) {
-        this.deskbeeService.checkInByUser(checkIns);
-      }
-    });
+  async automateCheckIn() {
+    const passLogs = await this.controlidRepository.getUserPassLogs();
+    const logs = passLogs.map((log: any) => new EntranceDto(log));
+    for (const log of logs) {
+      this.saveEntranceLog(log);
+    }
+    const checkIns = logs.map((log: any) => log.toCheckInDto());
+    if (checkIns.length > 0) {
+      this.deskbeeService.checkInByUser(checkIns);
+    }
   }
 
   saveEntranceLog(entrance: EntranceDto) {
@@ -116,15 +115,16 @@ export class CronService {
   }
 
   async checkBookingsToAccessControl() {
+    const nextDay = formatDateToDatabase(
+      setDateToLocal(addDaysToDate(new Date(), 1)),
+      false,
+    );
     const bookings = await this.bookingRepository
       .createQueryBuilder('bookings')
       .where('bookings.sync_date IS NULL ')
       .orWhere('bookings."sync_date" = ""')
       .andWhere('bookings.start_date < :date', {
-        date: formatDateToDatabase(
-          setDateToLocal(addDaysToDate(new Date(), 1)),
-          false,
-        ),
+        date: nextDay,
       })
       .getMany();
     for (const booking of bookings) {

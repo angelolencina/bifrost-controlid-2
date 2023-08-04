@@ -11,6 +11,7 @@ import { Cards } from '../../entities/Cards.entity';
 import { Logs } from '../../entities/Logs.entity';
 import { subtractMinutesFromNow } from '../../../../utils/subtract-minutes-from-now.util';
 import { PersonalBadgeEntity } from '../../../../entities/personal-badge.entity';
+import { AccountEntity } from '../../../../entities/account.entity';
 
 @Injectable()
 export default class ControlidRepository {
@@ -26,21 +27,38 @@ export default class ControlidRepository {
     private logsRepository: Repository<Logs>,
     @InjectRepository(PersonalBadgeEntity)
     private personalBadgeRepository: Repository<PersonalBadgeEntity>,
+    @InjectRepository(AccountEntity)
+    private accountRepo: Repository<AccountEntity>,
   ) {}
 
-  saveUserCard(userId: string, qrCodeControlId: number) {
+  async saveUserCard(userId: string, qrCodeControlId: number) {
+    const [account] = await this.accountRepo.find();
+    const integration: any = account?.integration || [];
+    const dataIntegration = integration.find(
+      (row: any) => row?.name === 'controlid-on-premise',
+    );
+    if (!!dataIntegration?.mysql) {
+      return this.cardRepository.query(
+        `INSERT INTO cards (
+          idUser, idType, type, number, numberStr
+        ) VALUES (
+          '${userId}', '1', '2', '${qrCodeControlId}',
+          (select CONCAT(CONVERT((${qrCodeControlId} DIV 65536), CHAR), ",", CONVERT((${qrCodeControlId} MOD 65536), CHAR)))
+        )`,
+      );
+    }
     return this.cardRepository.query(
       `INSERT INTO cards (
         idUser, idType, type, number, numberStr
       ) VALUES (
         '${userId}', '1', '2', '${qrCodeControlId}',
-        (select CONCAT(CONVERT((${qrCodeControlId} DIV 65536), CHAR), ",", CONVERT((${qrCodeControlId} MOD 65536), CHAR)))
+        (SELECT CAST(${qrCodeControlId} / 65536 AS TEXT) || ',' || CAST(${qrCodeControlId} % 65536 AS TEXT))
       )`,
     );
   }
 
-  getLastCreatedUsers() {
-    const lastDatePersonalBadge = this.getLastDatePersonalBadge();
+  async getLastCreatedUsers() {
+    const lastDatePersonalBadge = await this.getLastDatePersonalBadge();
     const timeOfRegistration = lastDatePersonalBadge
       ? `OR timeOfRegistration > '${lastDatePersonalBadge}'`
       : '';
@@ -48,7 +66,7 @@ export default class ControlidRepository {
       SELECT id, email 
       FROM users 
       where deleted = 0 AND email != '' 
-      AND (id NOT IN (SELECT idUser FROM cards where idType = 1 AND type = 2) ${timeOfRegistration})'
+      AND (id NOT IN (SELECT idUser FROM cards where idType = 1 AND type = 2) ${timeOfRegistration})
     `);
   }
 

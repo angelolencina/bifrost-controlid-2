@@ -44,7 +44,7 @@ export class CronService {
     if (this.options?.automatedCheckIn) {
       this.addCronJob('automatedCheckIn', '*/30');
     }
-    if (this.options?.genQrCode) {
+    if (this.options?.genQrCode) {  
       this.addCronJob('generateUserQrCode', '*/30');
     }
   }
@@ -184,6 +184,7 @@ export class CronService {
     this.logger.log(`Creating ${users.length} qr codes`);
     for (const user of users) {
       const code = await this.apiControlid.createUserQrCode(user.id);
+      await this.controlidRepository.saveUserCard(user.id, code);
       this.logger.log(`Qr code created for user ${user.email} code: ${code}`);
       const newBadge = await this.personalBadgeRepository.create({
         code,

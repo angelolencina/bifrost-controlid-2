@@ -19,6 +19,7 @@ import { Logs } from './entities/Logs.entity';
 import ControlidRepository from './database/repositories/controlid.repository';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
+import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
 
 @Module({})
 export class ControlidModule {
@@ -31,6 +32,7 @@ export class ControlidModule {
           AccountEntity,
           EntranceLogEntity,
           BookingEntity,
+          PersonalBadgeEntity,
         ]),
         TypeOrmModule.forFeature([Users, Cards, Logs], 'controlid'),
         DeskbeeModule,

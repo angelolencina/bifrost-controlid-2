@@ -9,6 +9,7 @@ import { setDateToLocal } from '../../../../utils/set-date-to-local.util';
 import { Users } from '../../entities/Users.entity';
 import { Cards } from '../../entities/Cards.entity';
 import { Logs } from '../../entities/Logs.entity';
+import { subtractMinutesFromNow } from '../../../../utils/subtract-minutes-from-now.util';
 
 @Injectable()
 export default class ControlidRepository {
@@ -30,9 +31,8 @@ export default class ControlidRepository {
       idType: 1,
       type: 2,
       number: identification.toString(),
-      numberStr: `${Math.floor(identification / 65536)},${
-        identification % 65536
-      }`,
+      numberStr: `${Math.floor(identification / 65536)},${identification % 65536
+        }`,
     });
     return this.cardRepository.save(newQr);
   }
@@ -110,23 +110,40 @@ export default class ControlidRepository {
   }
 
   async getUserPassLogs() {
-    const [lastLog] = await this.getLastDateLog();
-    const lastLogDate = lastLog?.created_at
-      ? formatDateToDatabase(setDateToLocal(new Date(lastLog.created_at)))
-      : getLastDayString();
-    return this.logsRepository
-      .createQueryBuilder('logs')
-      .innerJoin('users', 'u', 'u.id = logs.idUser')
-      .where(
-        'u.deleted = false and u.email is not null and logs.event = 7 and logs.time > :lastLogDate',
-        { lastLogDate },
-      )
-      .getMany();
+    const lastLogDate = await this.getLastDateLog();
+    return this.logsRepository.query(
+      `SELECT
+        u.email,
+        l.idDevice,
+        l.deviceName,
+        l.reader,
+        l.idArea,
+        l.area,
+        l.event,
+        l.time as createdAt
+      FROM
+        logs l
+        INNER JOIN users u ON u.id = l.idUser
+      WHERE
+        l.time > '${lastLogDate}'
+        AND u.deleted = 0
+        AND l.event = 7 and u.email is not null`,
+    );
   }
+
   getLastDateLog() {
-    return this.entranceRepository.find({
-      order: { created_at: 'DESC' },
-      take: 1,
-    });
+    return this.entranceRepository
+      .find({
+        order: { created_at: 'DESC' },
+        take: 1,
+      })
+      .then(([res]) => {
+        if (!res) {
+          return formatDateToDatabase(
+            setDateToLocal(subtractMinutesFromNow(10)),
+          );
+        }
+        return formatDateToDatabase(setDateToLocal(new Date(res.created_at)));
+      });
   }
 }

@@ -1,5 +1,4 @@
-import { formatDateToDatabase } from '../utils/format-date.util';
-import { setDateToLocal } from '../utils/set-date-to-local.util';
+import { formatDateString } from '../utils/format-date-string.util';
 
 type EntranceProps = {
   email: string;
@@ -72,7 +71,7 @@ export class EntranceDto {
     return {
       device: this.idDevice,
       person: this.email,
-      date: formatDateToDatabase(setDateToLocal(new Date(this.createdAt))),
+      date: formatDateString(this.createdAt),
       entrance: 1,
     };
   }

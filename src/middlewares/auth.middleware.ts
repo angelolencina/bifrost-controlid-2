@@ -35,7 +35,6 @@ export class AuthMiddleware implements NestMiddleware {
       }
       next();
     } else {
-      console.log('request.headers', request.headers);
       if (
         request.originalUrl === '/accounts' &&
         !(request.headers['x-signature'] === process.env.SIGNATURE)

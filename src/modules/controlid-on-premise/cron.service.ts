@@ -99,18 +99,18 @@ export class CronService {
     const passLogs = await this.controlidRepository.getUserPassLogs();
     const logs = passLogs.map((log: any) => new EntranceDto(log));
     for (const log of logs) {
-      this.saveEntranceLog(log);
+      await this.saveEntranceLog(log);
     }
     const checkIns: CheckInDto[] = logs.map((log: EntranceDto) =>
       log.toCheckInDto(),
     );
     if (checkIns.length > 0) {
-      this.deskbeeService.checkInByUser(checkIns);
+      await this.deskbeeService.checkInByUser(checkIns);
     }
   }
 
-  saveEntranceLog(entrance: EntranceDto) {
-    this.entranceRepository.save(entrance.toJson()).then(() => {
+  async saveEntranceLog(entrance: EntranceDto) {
+    return this.entranceRepository.save(entrance.toJson()).then(() => {
       this.logger.log(
         `Entrance ${entrance.email} on device ${entrance?.deviceName}  saved`,
       );

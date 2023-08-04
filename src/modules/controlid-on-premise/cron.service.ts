@@ -44,7 +44,7 @@ export class CronService {
     if (this.options?.automatedCheckIn) {
       this.addCronJob('automatedCheckIn', '*/30');
     }
-    if (this.options?.genQrCode) {  
+    if (this.options?.genQrCode) {
       this.addCronJob('generateUserQrCode', '*/30');
     }
   }
@@ -102,6 +102,7 @@ export class CronService {
   async automateCheckIn() {
     const passLogs = await this.controlidRepository.getUserPassLogs();
     const logs = passLogs.map((log: any) => new EntranceDto(log));
+    this.logger.log(`Automated check in for ${logs.length} users`);
     for (const log of logs) {
       await this.saveEntranceLog(log);
     }

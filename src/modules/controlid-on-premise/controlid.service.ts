@@ -54,8 +54,10 @@ export class ControlidService {
         );
       accessControlOff = excludedEmail || excludedGroup;
 
-      if (mailInHomologation || !accessControlOff) {
-        this.processAccessControl(bookingWebhook);
+      if (this.options?.inHomologation) {
+        if (mailInHomologation) {
+          this.processAccessControl(bookingWebhook);
+        }
         return;
       }
       if (accessControlOff) {

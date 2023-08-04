@@ -2,8 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigurationEntity } from './entities/configuration.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { apiDeskbee, getBearerToken } from './apis/deskbee-base.api';
-import { isValidToken } from './utils/is-token-expired.util';
+import { apiDeskbee } from './apis/deskbee-base.api';
 import { AccountEntity } from './entities/account.entity';
 import AccountFactory from './factory/account.factory';
 import { DeskbeeService } from './deskbee/deskbee.service';
@@ -40,24 +39,7 @@ export class AppService {
   }
 
   async getToken() {
-    const config = await this.getConfigCredential();
-    if (config) {
-      if (isValidToken(config.token_expires_in)) {
-        return config.token;
-      }
-      return getBearerToken(config.credential).then(async (res) => {
-        await this.configRepository.update(
-          { account: this.account },
-          {
-            token: res.access_token,
-            token_expires_in: new Date(
-              new Date().getTime() + res.expires_in * 1000,
-            ).toISOString(),
-          },
-        );
-        return res.data.access_token;
-      });
-    }
+    return this.deskbeeService.getToken();
   }
 
   async saveAccount(account: any) {

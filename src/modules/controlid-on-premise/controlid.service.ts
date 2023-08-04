@@ -14,6 +14,7 @@ import { BookingRepository } from '../../database/repositories/booking.repositor
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 import ControlidOptions from './interface/controlid-options.interface';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
+import { UserWebhookDto } from '../../dto/user-webhook.dto';
 
 config();
 
@@ -53,7 +54,6 @@ export class ControlidService {
           userGroups.includes(value),
         );
       accessControlOff = excludedEmail || excludedGroup;
-
       if (this.options?.inHomologation) {
         if (mailInHomologation) {
           this.processAccessControl(bookingWebhook);
@@ -67,9 +67,31 @@ export class ControlidService {
     }
   }
 
+  @OnEvent('user')
+  async handleUser(userWebhook: UserWebhookDto) {
+    if (userWebhook.resource.action === 'created') {
+      const user = await this.deskbeeService.getUser(userWebhook.resource.uuid);
+      if (!user) {
+        return;
+      }
+      this.controlidRepository.createUser(user);
+    }
+    if (userWebhook.resource.action === 'updated') {
+      const user = await this.deskbeeService.getUser(userWebhook.resource.uuid);
+      if (!user) {
+        return;
+      }
+      this.controlidRepository.updateUser(user);
+    }
+
+    if (userWebhook.resource.action === 'deleted') {
+      this.controlidRepository.deleteUser(userWebhook.included.email);
+    }
+  }
+
   async processAccessControl(bookingWebhook: BookingWebhookDto) {
     this.logger.log(
-      `Booking : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
+      `Processing AccessControl : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
     );
     const newBooking = parseBooking(bookingWebhook).toSaveObject();
     if (isToday(newBooking.start_date) && newBooking.action === 'created') {
@@ -90,7 +112,7 @@ export class ControlidService {
   }
 
   async revokeUserAccess(email: string) {
-    this.logger.log(`Revoke access to last day for ${email}`);
+    this.logger.log(`Revoking access to last day for ${email}`);
     try {
       await this.controlidRepository.revokeUserAccess(email);
       this.apiControlid.syncAll();

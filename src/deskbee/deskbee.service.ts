@@ -33,6 +33,10 @@ export class DeskbeeService {
         return config;
       },
       function (error) {
+        new Logger(DeskbeeService.name).error(
+          `Interceptor: Error to get token`,
+        );
+
         return Promise.reject(error);
       },
     );
@@ -81,6 +85,17 @@ export class DeskbeeService {
       .then((res) => res.data.data)
       .catch((e) => {
         this.logger.error(`Error Send PersonalBadge: ${e.message}`);
+      });
+  };
+
+  getUser = (userUuid: string) => {
+    return this.api
+      .get(`/v1.1/users/${userUuid}`)
+      .then((res) => {
+        return res.data.data;
+      })
+      .catch((e) => {
+        this.logger.error(`Error getUser: ${e.message}`);
       });
   };
 

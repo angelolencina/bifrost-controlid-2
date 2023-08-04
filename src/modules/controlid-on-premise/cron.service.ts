@@ -187,7 +187,7 @@ export class CronService {
       const code = await this.apiControlid.createUserQrCode(user.id);
       await this.controlidRepository.saveUserCard(user.id, code);
       this.logger.log(`Qr code created for user ${user.email} code: ${code}`);
-      const newBadge = await this.personalBadgeRepository.create({
+      const newBadge = this.personalBadgeRepository.create({
         code,
         email: user.email,
       });

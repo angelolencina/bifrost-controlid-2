@@ -12,6 +12,7 @@ import { Logs } from '../../entities/Logs.entity';
 import { subtractMinutesFromNow } from '../../../../utils/subtract-minutes-from-now.util';
 import { PersonalBadgeEntity } from '../../../../entities/personal-badge.entity';
 import { AccountEntity } from '../../../../entities/account.entity';
+import { UserDeskbeeDto } from '../../../../dto/user-deskbee.dto.ts';
 
 @Injectable()
 export default class ControlidRepository {
@@ -77,6 +78,56 @@ export default class ControlidRepository {
         deleted: false,
       },
     });
+  }
+
+  async updateUser(userDeskbee: UserDeskbeeDto) {
+    const user = await this.getUserByEmail(userDeskbee.email);
+    if (user) {
+      this.userRepository.update(
+        { email: userDeskbee.email },
+        {
+          inativo: userDeskbee.status,
+          email: userDeskbee.email,
+          name: userDeskbee.name_display,
+        },
+      );
+      return;
+    }
+  }
+
+  async deleteUser(email: string) {
+    const user = await this.getUserByEmail(email);
+    if (user) {
+      this.userRepository.update(
+        { email: email },
+        {
+          deleted: true,
+        },
+      );
+    }
+  }
+
+  async createUser(userDeskbee: UserDeskbeeDto) {
+    const user = await this.getUserByEmail(userDeskbee.email);
+    if (user) {
+      return;
+    }
+    const newUser = this.userRepository.create({
+      senha: userDeskbee.uuid,
+      pis: '123456',
+      name: userDeskbee.name_display,
+      email: userDeskbee.email,
+      admin: false,
+      inativo: false,
+      contingency: false,
+      deleted: false,
+      canUseFacial: true,
+      idType: 0,
+      expireOnDateLimit: false,
+      blackList: false,
+      idArea: '1',
+    });
+    return this.userRepository.save(newUser);
   }
 
   getGroupIdByName?(name: string): number {

@@ -10,6 +10,7 @@ import { Users } from '../../entities/Users.entity';
 import { Cards } from '../../entities/Cards.entity';
 import { Logs } from '../../entities/Logs.entity';
 import { subtractMinutesFromNow } from '../../../../utils/subtract-minutes-from-now.util';
+import { PersonalBadgeEntity } from '../../../../entities/personal-badge.entity';
 
 @Injectable()
 export default class ControlidRepository {
@@ -23,19 +24,34 @@ export default class ControlidRepository {
     private cardRepository: Repository<Cards>,
     @InjectRepository(Logs, 'controlid')
     private logsRepository: Repository<Logs>,
+    @InjectRepository(PersonalBadgeEntity)
+    private personalBadgeRepository: Repository<PersonalBadgeEntity>,
   ) {}
 
-  saveUserCard(userId: string, identification: number) {
-    const newQr = this.cardRepository.create({
-      idUser: userId,
-      idType: 1,
-      type: 2,
-      number: identification.toString(),
-      numberStr: `${Math.floor(identification / 65536)},${identification % 65536
-        }`,
-    });
-    return this.cardRepository.save(newQr);
+  saveUserCard(userId: string, qrCodeControlId: number) {
+    return this.cardRepository.query(
+      `INSERT INTO cards (
+        idUser, idType, type, number, numberStr
+      ) VALUES (
+        '${userId}', '1', '2', '${qrCodeControlId}',
+        (select CONCAT(CONVERT((${qrCodeControlId} DIV 65536), CHAR), ",", CONVERT((${qrCodeControlId} MOD 65536), CHAR)))
+      )`,
+    );
   }
+
+  getLastCreatedUsers() {
+    const lastDatePersonalBadge = this.getLastDatePersonalBadge();
+    const timeOfRegistration = lastDatePersonalBadge
+      ? `OR timeOfRegistration > '${lastDatePersonalBadge}'`
+      : '';
+    return this.userRepository.query(`
+      SELECT id, email 
+      FROM users 
+      where deleted = 0 AND email != '' 
+      AND (id NOT IN (SELECT idUser FROM cards where idType = 1 AND type = 2) ${timeOfRegistration})'
+    `);
+  }
+
   getUserByEmail(email: string) {
     return this.userRepository.findOne({
       where: {
@@ -145,5 +161,14 @@ export default class ControlidRepository {
         }
         return formatDateToDatabase(setDateToLocal(new Date(res.created_at)));
       });
+  }
+
+  getLastDatePersonalBadge() {
+    return this.personalBadgeRepository.find().then(([res]) => {
+      if (!res) {
+        return null;
+      }
+      return formatDateToDatabase(setDateToLocal(new Date(res.created_at)));
+    });
   }
 }

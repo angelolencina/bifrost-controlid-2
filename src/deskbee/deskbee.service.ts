@@ -75,7 +75,7 @@ export class DeskbeeService {
     return bookings?.length ? sortByStartDateDesc(bookings) : [];
   }
 
-  savePersonalBadge = (personalBadgeDto: PersonalBadgeDto[]) => {
+  sendPersonalBadge = (personalBadgeDto: PersonalBadgeDto[]) => {
     return this.api
       .post(`/v1.1/integrations/personal-badge`, personalBadgeDto)
       .then((res) => res.data.data)

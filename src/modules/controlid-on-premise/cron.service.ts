@@ -2,7 +2,7 @@ import { Inject, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BookingEntity } from '../../entities/booking.entity';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { CronJob } from 'cron';
 import { EntranceDto } from '../../dto/entrance.dto';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
@@ -16,6 +16,7 @@ import ControlidOptions from './interface/controlid-options.interface';
 import ControlidRepository from './database/repositories/controlid.repository';
 import { ApiControlid } from './api/controlid.api';
 import { CheckInDto } from '../../dto/checkin.dto';
+import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
@@ -29,6 +30,8 @@ export class CronService {
     private bookingRepository: Repository<BookingEntity>,
     @InjectRepository(EntranceLogEntity)
     private entranceRepository: Repository<EntranceLogEntity>,
+    @InjectRepository(PersonalBadgeEntity)
+    private personalBadgeRepository: Repository<PersonalBadgeEntity>,
   ) {
     this.init();
   }
@@ -85,6 +88,7 @@ export class CronService {
 
     if (name === 'generateUserQrCode') {
       const job = new CronJob(`${seconds} * * * * *`, () => {
+        this.createUserQrCode();
         this.logger.warn(`time (${seconds}) for job ${name} to run!`);
       });
       this.schedulerRegistry.addCronJob(name, job);
@@ -172,6 +176,40 @@ export class CronService {
         return;
       }
       this.processAccessControl(booking);
+    }
+  }
+
+  async createUserQrCode() {
+    const users = await this.controlidRepository.getLastCreatedUsers();
+    this.logger.log(`Creating ${users.length} qr codes`);
+    for (const user of users) {
+      const code = await this.apiControlid.createUserQrCode(user.id);
+      this.logger.log(`Qr code created for user ${user.email} code: ${code}`);
+      const newBadge = await this.personalBadgeRepository.create({
+        code,
+        email: user.email,
+      });
+      this.personalBadgeRepository.save(newBadge);
+    }
+    this.sendPersonalBadge();
+  }
+
+  async sendPersonalBadge() {
+    const badges = await this.personalBadgeRepository.find({
+      where: { sync_date: IsNull() },
+    });
+    const badgesToSend = badges.map((badge) => {
+      return {
+        identifier_type: 'email',
+        identifier: badge.email,
+        code: badge.code,
+      };
+    });
+    this.logger.log(`Sending ${badgesToSend.length} Personalbadges to deskbee`);
+    await this.deskbeeService.sendPersonalBadge(badgesToSend);
+    for (const badge of badges) {
+      badge.sync_date = formatDateToDatabase(new Date());
+      await this.personalBadgeRepository.save(badge);
     }
   }
 

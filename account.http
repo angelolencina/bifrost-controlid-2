@@ -4,23 +4,34 @@ content-type: application/json
 
 {
 	"code":"",
-	"integration": [{
-		"name": "controlid-on-premise",
-		"features": ["access-control", "automated-checkin"],
-		"mysql": {
-			"host": "localhost",
-			"username": "root",
-			"password": "P4sswD",
-			"port": 3307,
-			"database": "acesso"
-		},
-		"sqlite": { "path": ""},
-		"mailsToExcludeFromAccessControl": [],
-		"groupsUuidToExcludeFromAccessControl": []
-	}],
-	"settings": {
-	"inHomologation": true,
-	"mailOnHomologation": [],
-		"activePlaces": []
-}
+		"integration": {
+		"controlidOnPremise" : {
+			"accessControlByLimit": false,
+			"automatedCheckIn": true,
+			"genQrCode": true,
+			"userRegistration": true,
+			"inHomologation": true,
+			"mailsInHomologation": [],
+			"deskbeeExcludedGroups": [], 
+			"mailsExcluded": [],
+			"activePlaces": [],
+			"database":{
+				"mysql": {
+					"host": "localhost",
+					"username": "root",
+					"password": "P4sswD",
+					"port": 3307,
+					"database": "acesso"
+				}
+				//sql: {path: "C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite"}
+			}, 
+			"api":{
+				"host": "localhos:30443/api",
+					"user": "admin",
+					"password": "admin"
+			}
+			
+			
+		}
+	}
 }

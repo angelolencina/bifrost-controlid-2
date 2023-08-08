@@ -6,6 +6,7 @@ import { apiDeskbee } from './apis/deskbee-base.api';
 import { AccountEntity } from './entities/account.entity';
 import AccountFactory from './factory/account.factory';
 import { DeskbeeService } from './deskbee/deskbee.service';
+import { AccountRequestDto } from './dto/account-request.dto';
 
 @Injectable()
 export class AppService {
@@ -19,12 +20,12 @@ export class AppService {
     private readonly deskbeeService: DeskbeeService,
   ) {
     apiDeskbee.interceptors.request.use(
-      async (config) => {
+      async (config: any) => {
         const token = await this.getToken();
         config.headers['Authorization'] = `Bearer ${token}`;
         return config;
       },
-      function (error) {
+      function (error: any) {
         return Promise.reject(error);
       },
     );
@@ -42,11 +43,13 @@ export class AppService {
     return this.deskbeeService.getToken();
   }
 
-  async saveAccount(account: any) {
-    this.logger.log(`saveAccount account: ${this.account}`);
-    account = AccountFactory.createAccount(account);
-    await this.accountRepository.upsert([account.toJson()], ['code']);
-    return this.accountRepository.findOne({ where: { code: account.code } });
+  async saveAccount(account: AccountRequestDto) {
+    this.logger.log(`saveAccount account: ${account.accountCode}`);
+    const newAccount = AccountFactory.createAccount(account);
+    await this.accountRepository.upsert([newAccount.toJson()], ['code']);
+    return this.accountRepository.findOne({
+      where: { code: account.accountCode },
+    });
   }
 
   public getBookings() {

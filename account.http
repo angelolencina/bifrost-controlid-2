@@ -23,7 +23,7 @@ content-type: application/json
 					"port": 3307,
 					"database": "acesso"
 				}
-				//sql: {path: "C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite"}
+				//"sqlite": {"path": "C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite"}
 			}, 
 			"api":{
 				"host": "localhos:30443/api",

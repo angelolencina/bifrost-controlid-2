@@ -1,15 +1,25 @@
-import { Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as https from 'https';
 import ControlidApiInterface from '../../../interfaces/controlid-api.interface';
+import { ControlidOnPremiseDto } from '../../../dto/controlid-on-premise-request.dto';
+import { CONTROLID_CONFIG_OPTIONS } from '../constants/controlid-options.constant';
 
+@Injectable()
 export class ApiControlid implements ControlidApiInterface {
   private readonly logger = new Logger('ApiControlid');
   public api: AxiosInstance;
   static baseUrl: string = process.env.CONTROLID_API || '';
-  constructor() {
+  constructor(
+    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
+  ) {
+    this.init();
+  }
+
+  async init() {
+    const apiConfig = this.options?.api;
     this.api = axios.create({
-      baseURL: process.env.CONTROLID_API,
+      baseURL: apiConfig?.host || process.env.CONTROLID_API,
       headers: { 'Content-Type': `application/json; charset=UTF-8` },
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
@@ -18,7 +28,7 @@ export class ApiControlid implements ControlidApiInterface {
 
     this.api.interceptors.request.use(
       async (config) => {
-        config.headers['Authorization'] = await ApiControlid.getBearerToken();
+        config.headers['Authorization'] = await this.getToken();
         return config;
       },
       function (error) {
@@ -27,11 +37,11 @@ export class ApiControlid implements ControlidApiInterface {
     );
   }
 
-  static getBearerToken = () => {
-    const _logger = new Logger('ApiControlid');
+  getToken() {
+    const apiConfig = this.options?.api;
     const body = {
-      username: process.env.CONTROLID_API_USER,
-      password: process.env.CONTROLID_API_PASSWORD,
+      username: apiConfig?.user || process.env.CONTROLID_API_USER,
+      password: apiConfig.password || process.env.CONTROLID_API_PASSWORD,
     };
     const config = {
       httpsAgent: new https.Agent({
@@ -42,10 +52,11 @@ export class ApiControlid implements ControlidApiInterface {
       .post(`${process.env.CONTROLID_API}/login`, body, config)
       .then((res) => `Bearer ${res.data.accessToken}`)
       .catch((e) => {
-        _logger.error(`Erro to Get Token Controlid ${e?.message}`);
+        this.logger.error(`Erro to Get Token Controlid ${e?.message}`);
         throw new Error(`Erro to Get Token Controlid ${e?.message}`);
       });
-  };
+  }
+
   createUserQrCode(userId: number) {
     return this.api
       .post(`/qrcode/userqrcode`, userId)

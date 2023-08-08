@@ -1,11 +1,11 @@
 import { Account } from '../domains/account';
+import { IntegrationRequestDto } from '../dto/integration-request.dto';
 import { IIntegration } from '../interface/integration.interface';
 import { ISettings } from '../interface/settings.interface';
 
 type AccountProps = {
-  code: string;
-  settings: ISettings;
-  integration: IIntegration[];
+  accountCode: string;
+  integration: IntegrationRequestDto;
 };
 export default class AccountFactory {
   static createAccount(props: AccountProps): Account {

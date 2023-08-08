@@ -9,7 +9,6 @@ import { DeskbeeModule } from '../../deskbee/deskbee.module';
 import { CronService } from './cron.service';
 import { AccountEntity } from '../../entities/account.entity';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
-import ControlidOptions from './interface/controlid-options.interface';
 import ControlidAsyncOptions from './types/controlid-async-options.type';
 import { ConfigurationEntity } from '../../entities/configuration.entity';
 import DatabaseModule from './database/database.module';
@@ -20,6 +19,7 @@ import ControlidRepository from './database/repositories/controlid.repository';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
+import { AccountRepository } from '../../database/repositories/account.repository';
 
 @Module({})
 export class ControlidModule {
@@ -44,6 +44,7 @@ export class ControlidModule {
           useFactory: options.useFactory,
           inject: options.inject,
         },
+        AccountRepository,
         ControlidService,
         ApiControlid,
         ControlidRepository,

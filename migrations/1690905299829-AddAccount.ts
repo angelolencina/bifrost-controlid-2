@@ -5,7 +5,7 @@ export class AddAccount1690905299829 implements MigrationInterface {
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "accounts" ("id" varchar PRIMARY KEY NOT NULL, "code" varchar NOT NULL, "settings" text, "integration" text, "updated_at" datetime NOT NULL DEFAULT (datetime('now')), "created_at" datetime NOT NULL DEFAULT (datetime('now')))`,
+      `CREATE TABLE "accounts" ("id" varchar PRIMARY KEY NOT NULL, "code" varchar NOT NULL, "integration" text, "updated_at" datetime NOT NULL DEFAULT (datetime('now')), "created_at" datetime NOT NULL DEFAULT (datetime('now')))`,
     );
     await queryRunner.query(
       `CREATE UNIQUE INDEX "IDX_490319656e54a7957dc1fed027" ON "accounts" ("code") `,

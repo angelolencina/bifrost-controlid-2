@@ -22,8 +22,8 @@ export class AppController {
   }
 
   @Post('accounts')
-  saveAccount(@Body() payload: AccountRequestDto) {
-    return this.appService.saveAccount(payload);
+  saveAccount(@Body() account: AccountRequestDto) {
+    return this.appService.saveAccount(account);
   }
 
   @Get('bookings')

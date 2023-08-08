@@ -1,37 +1,30 @@
+import { IntegrationRequestDto } from '../dto/integration-request.dto';
 import { IIntegration } from '../interface/integration.interface';
 import { ISettings } from '../interface/settings.interface';
 
 type AccountProps = {
-  code: string;
-  settings?: ISettings;
-  integration?: IIntegration[];
+  accountCode: string;
+  integration: IntegrationRequestDto;
 };
 export class Account {
   #code: string;
-  #settings: string;
-  #integration: string;
+  #integration: IntegrationRequestDto;
   constructor(props: AccountProps) {
-    this.#code = props.code;
-    this.#settings = JSON.stringify(props.settings);
-    this.#integration = JSON.stringify(props.integration);
+    this.#code = props.accountCode;
+    this.#integration = props.integration;
   }
 
   get code(): string {
     return this.#code;
   }
 
-  get settings(): ISettings {
-    return JSON.parse(this.#settings);
-  }
-
-  get integration(): IIntegration[] {
-    return JSON.parse(this.#integration);
+  get integration() {
+    return this.#integration;
   }
 
   toJson() {
     return {
       code: this.code,
-      settings: this.settings,
       integration: this.integration,
     };
   }

@@ -37,4 +37,5 @@ lerna-debug.log*
 bifrost
 rabbitmq.env
 gateway.sqlite
+acesso.sqlite
 C:/ProgramData/Control iD/iDSecure/acesso.sqlite

@@ -12,8 +12,9 @@ import { formatDateToDatabase } from '../../utils/format-date.util';
 import ControlidRepository from './database/repositories/controlid.repository';
 import { BookingRepository } from '../../database/repositories/booking.repository';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
-import ControlidOptions from './interface/controlid-options.interface';
+
 import { DeskbeeService } from '../../deskbee/deskbee.service';
+import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
 import { UserWebhookDto } from '../../dto/user-webhook.dto';
 
 config();
@@ -22,7 +23,7 @@ config();
 export class ControlidService {
   public logger = new Logger('Controlid-On-Premise-Service');
   constructor(
-    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
+    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
     private readonly apiControlid: ApiControlid,
     @InjectRepository(BookingEntity)
     private bookingRepository: BookingRepository,
@@ -33,7 +34,7 @@ export class ControlidService {
 
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
-    if (this?.options?.activeAccessControl) {
+    if (this?.options?.accessControlByLimit) {
       const userGroups = await this.getUserGroups(
         bookingWebhook.included.person.email,
       );
@@ -42,17 +43,15 @@ export class ControlidService {
 
       const mailInHomologation =
         this.options?.inHomologation &&
-        this.options.mailOnHomologation.includes(
+        this.options.mailsInHomologation.includes(
           bookingWebhook.included.person.email,
         );
-      const excludedEmail =
-        this.options?.mailsToExcludeFromAccessControl.includes(
-          bookingWebhook.included.person.email,
-        );
-      const excludedGroup =
-        this.options.groupsUuidToExcludeFromAccessControl.some((value) =>
-          userGroups.includes(value),
-        );
+      const excludedEmail = this.options?.mailsExcluded.includes(
+        bookingWebhook.included.person.email,
+      );
+      const excludedGroup = this.options.deskbeeExcludedGroups.some((value) =>
+        userGroups.includes(value),
+      );
       accessControlOff = excludedEmail || excludedGroup;
       if (this.options?.inHomologation) {
         if (mailInHomologation) {

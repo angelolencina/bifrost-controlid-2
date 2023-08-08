@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { IntegrationRequestDto } from '../dto/integration-request.dto';
 
 @Entity('accounts')
 export class AccountEntity {
@@ -18,10 +19,7 @@ export class AccountEntity {
   code: string;
 
   @Column({ type: 'simple-json', nullable: true })
-  settings: string;
-
-  @Column({ type: 'simple-json', nullable: true })
-  integration: string;
+  integration?: IntegrationRequestDto;
 
   @UpdateDateColumn()
   updated_at: string;

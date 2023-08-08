@@ -1,8 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { AccountEntity } from '../../../entities/account.entity';
-import { Repository } from 'typeorm';
-import { IIntegration } from '../../../interface/integration.interface';
+import { Not, Repository } from 'typeorm';
 import { Users } from '../entities/Users.entity';
 import { Usergroups } from '../entities/Usergroups.entity';
 import { Usertypes } from '../entities/Usertypes.entity';
@@ -33,88 +32,58 @@ import { Operatortypemodules } from '../entities/Operatortypemodules.entity';
 import { Operatortypes } from '../entities/Operatortypes.entity';
 import { Templates } from '../entities/Templates.entity';
 
-export const getDataBaseConfig = (integration: IIntegration): any => {
-  if (integration?.mysql) {
+const CONTROLID_ENTITIES = [
+  Users,
+  Usergroups,
+  Usertypes,
+  Typeidentificationrules,
+  Useridentificationrules,
+  Identificationrules,
+  Identificationmodes,
+  Modeidentificationrules,
+  Groupidentificationrules,
+  Groups,
+  Grouptypes,
+  Adfields,
+  Alarmlogs,
+  Cards,
+  Changelogs,
+  Configfields,
+  Configfieldsvalues,
+  Confignamesvalues,
+  Controlversion,
+  Devicerelays,
+  Devices,
+  Loginattemptlogs,
+  Logmessages,
+  Logs,
+  Operators,
+  Operatortypegroups,
+  Operatortypemodules,
+  Operatortypes,
+  Templates,
+];
+
+export const getDataBaseConfig = (databases: any): any => {
+  if (databases?.mysql) {
     return {
       name: 'controlid',
       type: 'mysql',
-      host: integration.mysql.host,
-      port: integration.mysql.port,
-      username: integration.mysql.username,
-      password: integration.mysql.password,
-      database: integration.mysql.database,
-      entities: [
-        Users,
-        Usergroups,
-        Usertypes,
-        Typeidentificationrules,
-        Useridentificationrules,
-        Identificationrules,
-        Identificationmodes,
-        Modeidentificationrules,
-        Groupidentificationrules,
-        Groups,
-        Grouptypes,
-        Adfields,
-        Alarmlogs,
-        Cards,
-        Changelogs,
-        Configfields,
-        Configfieldsvalues,
-        Confignamesvalues,
-        Controlversion,
-        Devicerelays,
-        Devices,
-        Loginattemptlogs,
-        Logmessages,
-        Logs,
-        Operators,
-        Operatortypegroups,
-        Operatortypemodules,
-        Operatortypes,
-        Templates,
-      ],
+      host: databases.mysql.host,
+      port: databases.mysql.port,
+      username: databases.mysql.username,
+      password: databases.mysql.password,
+      database: databases.mysql.database,
+      entities: CONTROLID_ENTITIES,
       autoLoadEntities: true,
     };
   }
-  const database =
-    integration?.sqlite?.path ||
-    'C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite';
+  const database = databases?.sqlite?.path || 'acesso.sqlite';
   return {
     name: 'controlid',
     type: 'sqlite',
     database,
-    entities: [
-      Users,
-      Usergroups,
-      Usertypes,
-      Typeidentificationrules,
-      Useridentificationrules,
-      Identificationrules,
-      Identificationmodes,
-      Modeidentificationrules,
-      Groupidentificationrules,
-      Groups,
-      Grouptypes,
-      Adfields,
-      Alarmlogs,
-      Cards,
-      Changelogs,
-      Configfields,
-      Configfieldsvalues,
-      Confignamesvalues,
-      Controlversion,
-      Devicerelays,
-      Devices,
-      Loginattemptlogs,
-      Logmessages,
-      Logs,
-      Operators,
-      Operatortypegroups,
-      Operatortypemodules,
-      Operatortypes,
-      Templates,
-    ],
+    entities: CONTROLID_ENTITIES,
     autoLoadEntities: true,
   };
 };
@@ -125,16 +94,12 @@ export const getDataBaseConfig = (integration: IIntegration): any => {
       inject: [getRepositoryToken(AccountEntity)],
       name: 'controlid',
       useFactory: async (accountRepository: Repository<AccountEntity>) => {
-        const integration = await accountRepository
-          .find()
-          .then(([res]: any) => {
-            if (res?.integration) {
-              return res?.integration?.find(
-                (row: any) => row?.name === 'controlid-on-premise',
-              );
-            }
-          });
-        return getDataBaseConfig(integration);
+        const config = await accountRepository.findOne({
+          where: { code: Not('null') },
+        });
+        return getDataBaseConfig(
+          config?.integration?.controlidOnPremise?.database,
+        );
       },
     }),
   ],

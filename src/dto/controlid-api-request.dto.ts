@@ -1,16 +1,11 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class MysqlRequestDto {
+export class ControlidApiRequestDto {
   @IsNotEmpty()
   @IsString()
   host: string;
   @IsNotEmpty()
-  username: string;
+  user: string;
   @IsNotEmpty()
   password: string;
-  @IsNotEmpty()
-  @IsString()
-  database: string;
-  @IsNotEmpty()
-  port: number;
 }

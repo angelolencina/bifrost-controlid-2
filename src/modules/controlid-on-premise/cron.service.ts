@@ -12,16 +12,16 @@ import { isToday } from '../../utils/is-today.util';
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
-import ControlidOptions from './interface/controlid-options.interface';
 import ControlidRepository from './database/repositories/controlid.repository';
 import { ApiControlid } from './api/controlid.api';
 import { CheckInDto } from '../../dto/checkin.dto';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
+import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
   constructor(
-    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOptions,
+    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
     private readonly deskbeeService: DeskbeeService,
     private readonly apiControlid: ApiControlid,
     private schedulerRegistry: SchedulerRegistry,
@@ -37,7 +37,7 @@ export class CronService {
   }
 
   init() {
-    if (this.options?.activeAccessControl) {
+    if (this.options?.accessControlByLimit) {
       this.addCronJob('accessControl', '*/30');
       this.addCronJob('getBookingsToCurrentDay', '*/30');
     }
@@ -136,9 +136,7 @@ export class CronService {
       })
       .getMany();
     for (const booking of bookings) {
-      if (
-        this.options.mailsToExcludeFromAccessControl.includes(booking.email)
-      ) {
+      if (this.options.mailsExcluded.includes(booking.email)) {
         return;
       }
       try {
@@ -168,12 +166,12 @@ export class CronService {
       const email = booking.person.email;
       if (
         this.options?.inHomologation &&
-        this.options.mailOnHomologation.includes(email)
+        this.options.mailsInHomologation.includes(email)
       ) {
         this.processAccessControl(booking);
         return;
       }
-      if (this.options.mailsToExcludeFromAccessControl.includes(email)) {
+      if (this.options.mailsExcluded.includes(email)) {
         return;
       }
       this.processAccessControl(booking);

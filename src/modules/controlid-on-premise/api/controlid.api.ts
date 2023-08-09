@@ -9,7 +9,7 @@ import { CONTROLID_CONFIG_OPTIONS } from '../constants/controlid-options.constan
 export class ApiControlid implements ControlidApiInterface {
   private readonly logger = new Logger('ApiControlid');
   public api: AxiosInstance;
-  static baseUrl: string = process.env.CONTROLID_API || '';
+  static baseUrl = '';
   constructor(
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
   ) {
@@ -19,7 +19,7 @@ export class ApiControlid implements ControlidApiInterface {
   async init() {
     const apiConfig = this.options?.api;
     this.api = axios.create({
-      baseURL: apiConfig?.host || process.env.CONTROLID_API,
+      baseURL: apiConfig?.host,
       headers: { 'Content-Type': `application/json; charset=UTF-8` },
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
@@ -40,8 +40,8 @@ export class ApiControlid implements ControlidApiInterface {
   getToken() {
     const apiConfig = this.options?.api;
     const body = {
-      username: apiConfig?.user || process.env.CONTROLID_API_USER,
-      password: apiConfig.password || process.env.CONTROLID_API_PASSWORD,
+      username: apiConfig?.user,
+      password: apiConfig.password,
     };
     const config = {
       httpsAgent: new https.Agent({
@@ -49,7 +49,7 @@ export class ApiControlid implements ControlidApiInterface {
       }),
     };
     return axios
-      .post(`${process.env.CONTROLID_API}/login`, body, config)
+      .post(`${apiConfig?.host}/login`, body, config)
       .then((res) => `Bearer ${res.data.accessToken}`)
       .catch((e) => {
         this.logger.error(`Erro to Get Token Controlid ${e?.message}`);

@@ -7,9 +7,9 @@ content-type: application/json
 		"integration": {
 		"controlidOnPremise" : {
 			"accessControlByLimit": false,
-			"automatedCheckIn": true,
-			"genQrCode": true,
-			"userRegistration": true,
+			"automatedCheckIn": false,
+			"genQrCode": false,
+			"userRegistration": false,
 			"inHomologation": true,
 			"mailsInHomologation": [],
 			"deskbeeExcludedGroups": [], 
@@ -26,7 +26,7 @@ content-type: application/json
 				//"sqlite": {"path": "C:\\ProgramData\\Control iD\\iDSecure\\acesso.sqlite"}
 			}, 
 			"api":{
-				"host": "localhos:30443/api",
+				"host": "https://localhost:30443/api",
 					"user": "admin",
 					"password": "admin"
 			}

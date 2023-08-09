@@ -9,6 +9,7 @@ import {
 import { Type } from 'class-transformer';
 import { ControlidDatabaseRequestDto } from './controlid-database-request.dto';
 import { ControlidOnPremiseDto } from './controlid-on-premise-request.dto';
+import { IpremiDto } from './ipremi.dto';
 
 export class IntegrationRequestDto {
   @IsOptional()
@@ -18,4 +19,11 @@ export class IntegrationRequestDto {
   @ValidateNested()
   @Type(() => ControlidOnPremiseDto)
   controlidOnPremise?: ControlidOnPremiseDto;
+  @IsOptional()
+  @IsDefined()
+  @IsNotEmptyObject()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => IpremiDto)
+  iPremi?: IpremiDto;
 }

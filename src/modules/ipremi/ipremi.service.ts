@@ -12,7 +12,7 @@ import { getStartOfDay } from '../../utils/get-start-of-the-day.util';
 import { getEndOfDay } from '../../utils/get-end-of-the-day.util';
 import { factoryReward } from './factory/reward.factory';
 import moment from 'moment';
-import { apiIpremi } from './api/ipremi.api.config';
+import { ApiIpremi } from './api/ipremi.api-1.config';
 
 const EVENT_CHECK_IN = 'checkin';
 const EVENT_BOOKING = 'booking';
@@ -29,6 +29,7 @@ export class IpremiService {
   public logger = new Logger('IpremiService');
   constructor(
     private readonly deskbeeService: DeskbeeService,
+    private readonly apiIpremi: ApiIpremi,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
     @InjectRepository(RewardEntity)
@@ -139,9 +140,5 @@ export class IpremiService {
         },
       )
       .getExists();
-  }
-
-  sendParticipantData(body: any) {
-    return apiIpremi.post('/partner/sendParticipantData', body);
   }
 }

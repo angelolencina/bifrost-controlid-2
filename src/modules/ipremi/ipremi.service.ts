@@ -90,7 +90,9 @@ export class IpremiService {
       return;
     }
     const isNew = webhookEvent.action === ACTION_CREATED;
-    const bookingSaved = await this.bookingRepository.findOne({where: {uuid: webhookEvent.uuid}});
+    const bookingSaved = await this.bookingRepository.findOne({
+      where: { uuid: webhookEvent.uuid },
+    });
     console.log(bookingSaved);
     const isBeforehand =
       !!isNew && moment().diff(moment(webhookEvent.start_date), 'days') >= 2;

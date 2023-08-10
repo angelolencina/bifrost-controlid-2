@@ -1,5 +1,5 @@
 export class ParticipantDataDto {
   ParticipantID: number;
-  ParticipantToken: number;
+  ParticipantToken: string;
   ParticipantTokenValidThroughDate: string;
 }

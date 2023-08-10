@@ -2,7 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { IPREMI_CONFIG_OPTIONS } from '../constants/ipremi-options.constant';
 import { IpremiDto } from '../../../dto/ipremi.dto';
-import { SendDataDto } from '../dto/send-data.dto';
+import { SendDataDto, SendDataProps } from '../dto/send-data.dto';
 import { ParticipantDataDto } from '../dto/participant-data.dto';
 import { DoParticipantCreditDataDto } from '../dto/do-participant-credit-data.dto';
 
@@ -32,11 +32,10 @@ export class ApiIpremi {
     });
   }
 
-  sendParticipantData(data: SendDataDto): Promise<ParticipantDataDto> {
-    data.EnterpriseID = this.options.enterpriseId;
-    data.ParticipantProfileID = this.options.profileId;
-
-    return this.api.post('/partner/sendParticipantData', data);
+  sendParticipantData(data: SendDataProps): Promise<ParticipantDataDto> {
+    return this.api
+      .post('/partner/sendParticipantData', data)
+      .then((res) => res.data);
   }
 
   doParticipantCreditRequest(data: DoParticipantCreditDataDto) {

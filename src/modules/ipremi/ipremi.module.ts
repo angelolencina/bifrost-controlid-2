@@ -12,6 +12,8 @@ import IpremiAsyncOptions from './type/ipremi-async-options.type';
 import { AccountRepository } from '../../database/repositories/account.repository';
 import { AccountEntity } from '../../entities/account.entity';
 import { ApiIpremi } from './api/ipremi.api.config';
+import { RewardRepository } from './repositories/reward.repository';
+import { CronService } from './cron.service';
 
 @Module({})
 export class IpremiModule {
@@ -30,7 +32,9 @@ export class IpremiModule {
         },
         AccountRepository,
         IpremiService,
+        RewardRepository,
         ApiIpremi,
+        CronService,
       ],
     };
   }

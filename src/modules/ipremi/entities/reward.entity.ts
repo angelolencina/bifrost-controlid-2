@@ -34,7 +34,7 @@ export class RewardEntity {
   participant_token?: string;
 
   @Column({ nullable: true, type: 'datetime' })
-  participant_token_valid_through_date?: string;
+  participant_token_valid_through_date?: Date;
 
   @Column()
   action: string;

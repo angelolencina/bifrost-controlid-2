@@ -1,4 +1,4 @@
-import { Inject, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BookingEntity } from '../../entities/booking.entity';
@@ -19,6 +19,7 @@ import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date'
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
 
+@Injectable()
 export class CronService {
   public logger = new Logger('controlid-cron-service');
   constructor(

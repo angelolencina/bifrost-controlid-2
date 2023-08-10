@@ -5,7 +5,7 @@ export type SendDataProps = {
   ParticipantPassword: string;
   ParticipantName: string;
   ParticipantStatusID: number;
-}
+};
 
 export class SendDataDto {
   #EnterpriseID: number;

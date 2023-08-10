@@ -25,6 +25,5 @@ const EVENT_BOOKING = 'booking';
 
 export const processReward = (webhookEvent: BookingParsedDto) => {
   if (webhookEvent.event === EVENT_CHECK_IN) {
-    
   }
 };

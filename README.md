@@ -31,6 +31,7 @@ Esta versão é compatível com IdSecure da [ControlId](https://www.controlid.co
 ### Pré-requisitos
 
 Você vai precisar ter instalado em sua máquina as seguintes ferramentas:
+
 - [Git Bash](https://git-scm.com)
   - [windows] (https://github.com/git-for-windows/git/releases/download/v2.39.2.windows.1/Git-2.39.2-64-bit.exe)
 - [Node.js](https://nodejs.org/en/).
@@ -73,7 +74,6 @@ $ npm run test:e2e
 # test coverage
 $ npm run test:cov
 ```
-
 
 ## Stay in touch
 

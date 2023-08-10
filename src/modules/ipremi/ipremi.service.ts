@@ -58,7 +58,13 @@ export class IpremiService {
           `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
         );
       });
-    this.processCheckInReward(bookingParsed);
+
+    if (
+      bookingParsed.action === EVENT_CHECK_IN &&
+      bookingParsed.action === 'checkin'
+    ) {
+      this.processCheckInReward(bookingParsed);
+    }
   }
 
   async processCheckInReward(webhookEvent: BookingRewardDto) {

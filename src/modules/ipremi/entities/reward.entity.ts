@@ -7,6 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Person } from '../../../dto/person.dto';
+import { Place } from '../../../dto/place.dto';
 
 @Entity('rewards')
 @Index(['booking_uuid', 'event', 'action', 'email'], { unique: true })
@@ -41,7 +43,7 @@ export class RewardEntity {
   email: string;
 
   @Column({ type: 'simple-json' })
-  person: string;
+  person: Person;
 
   @Column()
   awarded_points: number;
@@ -50,17 +52,17 @@ export class RewardEntity {
   reward_type: string;
 
   @Column({ type: 'simple-json' })
-  place: string;
+  place: Place;
 
   @Column({ nullable: true })
-  sync_date?: string;
+  sync_date?: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deleted_at?: string;
+  deleted_at?: Date;
 }

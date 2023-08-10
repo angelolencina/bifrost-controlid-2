@@ -21,8 +21,8 @@ export class PersonalBadgeEntity {
 
   @Column({ nullable: true })
   @Index()
-  sync_date?: string;
+  sync_date?: Date;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 }

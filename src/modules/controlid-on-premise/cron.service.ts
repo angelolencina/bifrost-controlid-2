@@ -7,9 +7,6 @@ import { CronJob } from 'cron';
 import { EntranceDto } from '../../dto/entrance.dto';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
 import { addDaysToDate } from '../../utils/add-days-to-date';
-import { formatDateToDatabase } from '../../utils/format-date.util';
-import { isToday } from '../../utils/is-today.util';
-import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 import ControlidRepository from './database/repositories/controlid.repository';
@@ -17,6 +14,9 @@ import { ApiControlid } from './api/controlid.api';
 import { CheckInDto } from '../../dto/checkin.dto';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
 import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
+import { setDateToLocal } from '../../utils/set-date-to-local.util';
+import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date';
+import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
@@ -123,10 +123,8 @@ export class CronService {
   }
 
   async checkBookingsToAccessControl() {
-    const nextDay = formatDateToDatabase(
-      setDateToLocal(addDaysToDate(new Date(), 1)),
-      false,
-    );
+    const nextDay = addDaysToDate(new Date(), 1);
+
     const bookings = await this.bookingRepository
       .createQueryBuilder('bookings')
       .where('bookings.sync_date IS NULL ')
@@ -140,15 +138,15 @@ export class CronService {
         return;
       }
       try {
-        if (isToday(booking.start_date)) {
-          this.grantUserAccessToday(
-            booking.email,
-            booking.start_date,
-            booking.end_date,
-          );
-          booking.sync_date = formatDateToDatabase(new Date());
-          this.bookingRepository.save(booking);
-        }
+        // if (isToday(booking.start_date)) {
+        //   this.grantUserAccessToday(
+        //     booking.email,
+        //     booking.start_date,
+        //     booking.end_date,
+        //   );
+        //   booking.sync_date = formatDateToDatabase(new Date());
+        //   this.bookingRepository.save(booking);
+        // }
       } catch (error) {
         this.logger.error(error);
       }
@@ -208,62 +206,74 @@ export class CronService {
     this.logger.log(`Sending ${badgesToSend.length} Personalbadges to deskbee`);
     await this.deskbeeService.sendPersonalBadge(badgesToSend);
     for (const badge of badges) {
-      badge.sync_date = formatDateToDatabase(new Date());
+      badge.sync_date = new Date();
       await this.personalBadgeRepository.save(badge);
     }
   }
 
-  async processAccessControl(booking: any) {
-    const email = booking.person.email;
+  async processAccessControl({
+    person,
+    place,
+    uuid,
+    state,
+    start_date,
+    end_date,
+    min_tolerance,
+  }: any) {
+    const email = person.email;
     const hasBooking = await this.bookingRepository.findOne({
-      where: { uuid: booking.uuid },
+      where: { uuid },
     });
+
     if (!hasBooking?.uuid) {
       const action =
-        booking.state == 'fall' || booking.state == 'deleted'
-          ? 'deleted'
-          : 'created';
-      const _booking = {
-        uuid: booking.uuid,
-        start_date: formatDateToDatabase(
-          setDateToLocal(new Date(booking.start_date)),
-        ),
-        end_date: formatDateToDatabase(
-          setDateToLocal(new Date(booking.end_date)),
-        ),
-        state: booking.state,
+        state == 'fall' || state == 'deleted' ? 'deleted' : 'created';
+      const booking: any = {
+        uuid: uuid,
+        start_date: new Date(start_date),
+        end_date: new Date(end_date),
+        state: state,
         action,
         event: 'booking',
         email: email,
-        person: JSON.stringify(booking.person),
-        place: JSON.stringify(booking.place),
-        min_tolerance: booking?.min_tolerance,
-        sync_date: '',
+        person: person,
+        place: place,
+        tolerance: {
+          minutes: min_tolerance,
+          checkin_max_time: addMinutesFromDate(
+            new Date(start_date),
+            min_tolerance,
+          ),
+          checkin_min_time: subtractMinutesFromDate(
+            new Date(start_date),
+            min_tolerance,
+          ),
+        },
       };
       if (action === 'created') {
         try {
           await this.grantUserAccessToday(
             email,
-            _booking.start_date,
-            _booking.end_date,
+            setDateToLocal(booking.start_date),
+            setDateToLocal(booking.end_date),
           );
-          _booking.sync_date = formatDateToDatabase(new Date());
+          booking['sync_date'] = new Date();
         } catch (error) {
           this.logger.error(`Error on grant access to ${email} => ${error}`);
         }
       } else {
         try {
           await this.revokeUserAccess(email);
-          _booking.sync_date = formatDateToDatabase(new Date());
+          booking.sync_date = new Date();
         } catch (error) {
           this.logger.error(`Error on revoke access to ${email} => ${error}`);
         }
       }
-      this.bookingRepository.upsert(_booking, ['uuid', 'event', 'email']);
+      this.bookingRepository.upsert(booking, ['uuid', 'event', 'email']);
     }
   }
 
-  async grantUserAccessToday(email: string, start: string, end: string) {
+  async grantUserAccessToday(email: string, start: Date, end: Date) {
     this.logger.log(`Granting access today for ${email}`);
     try {
       await this.controlidRepository.grantAccessToToday(email, start, end);

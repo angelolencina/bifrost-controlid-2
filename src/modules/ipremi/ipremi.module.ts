@@ -11,6 +11,7 @@ import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
 import IpremiAsyncOptions from './type/ipremi-async-options.type';
 import { AccountRepository } from '../../database/repositories/account.repository';
 import { AccountEntity } from '../../entities/account.entity';
+import { ApiIpremi } from './api/ipremi.api.config';
 
 @Module({})
 export class IpremiModule {
@@ -28,6 +29,8 @@ export class IpremiModule {
           inject: options.inject,
         },
         AccountRepository,
+        IpremiService,
+        ApiIpremi,
       ],
     };
   }

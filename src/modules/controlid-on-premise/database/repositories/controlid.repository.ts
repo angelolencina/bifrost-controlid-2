@@ -3,9 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IsNull, Not, Repository } from 'typeorm';
 import { BookingParsedDto } from '../../../../dto/booking-parsed.dto';
 import { EntranceLogEntity } from '../../../../entities/entrance-log.entity';
-import { formatDateToDatabase } from '../../../../utils/format-date.util';
 import { getLastDayString } from '../../../../utils/get-last-day-string.util';
-import { setDateToLocal } from '../../../../utils/set-date-to-local.util';
 import { Users } from '../../entities/Users.entity';
 import { Cards } from '../../entities/Cards.entity';
 import { Logs } from '../../entities/Logs.entity';
@@ -159,10 +157,10 @@ export default class ControlidRepository {
   unblockUserAccessPerLimitDate(booking: BookingParsedDto) {
     const bookingJson: any = booking.toJson();
     const dateStartLimit = booking.tolerance?.checkin_min_time
-      ? formatDateToDatabase(setDateToLocal(booking.tolerance.checkin_min_time))
+      ? new Date(booking.tolerance.checkin_min_time)
       : bookingJson.start_date;
     const dateLimit = booking?.tolerance?.checkin_max_time
-      ? formatDateToDatabase(setDateToLocal(booking.tolerance.checkin_max_time))
+      ? new Date(booking.tolerance.checkin_max_time)
       : bookingJson.end_date;
     return this.userRepository.update(
       { email: booking.person.email },
@@ -170,7 +168,7 @@ export default class ControlidRepository {
     );
   }
 
-  async grantAccessToToday(email: string, start: string, end: string) {
+  async grantAccessToToday(email: string, start: Date, end: Date) {
     const user = await this.getUserByEmail(email);
     if (!user) {
       this.logger.error(`User not found on controlid: ${email}`);
@@ -224,11 +222,9 @@ export default class ControlidRepository {
       })
       .then(([res]) => {
         if (!res) {
-          return formatDateToDatabase(
-            setDateToLocal(subtractMinutesFromNow(10)),
-          );
+          return subtractMinutesFromNow(10);
         }
-        return formatDateToDatabase(setDateToLocal(new Date(res.created_at)));
+        return new Date(res.created_at);
       });
   }
 
@@ -237,7 +233,7 @@ export default class ControlidRepository {
       if (!res) {
         return null;
       }
-      return formatDateToDatabase(setDateToLocal(new Date(res.created_at)));
+      return new Date(res.created_at);
     });
   }
 }

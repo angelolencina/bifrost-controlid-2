@@ -22,8 +22,8 @@ export class AccountEntity {
   integration?: IntegrationRequestDto;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 }

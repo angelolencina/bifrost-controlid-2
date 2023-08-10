@@ -1,9 +1,7 @@
-import { formatDateToDatabase } from '../utils/format-date.util';
 import { Person } from './person.dto';
 import { Place } from './place.dto';
 import { Tolerance } from './tolerance.dto';
 import { v4 as uuid } from 'uuid';
-import { setDateToLocal } from '../utils/set-date-to-local.util';
 
 type BookingProps = {
   id?: string;
@@ -126,31 +124,24 @@ export class BookingParsedDto {
       uuid: this.uuid,
       event: this.#event,
       email: this.#email,
-      start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
-      end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
+      start_date: new Date(this.start_date),
+      end_date: new Date(this.end_date),
       tolerance: this.tolerance
         ? {
             ...this.tolerance,
-            checkin_max_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_max_time),
-            ),
-            checkin_min_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_min_time),
-            ),
+            checkin_max_time: new Date(this.tolerance.checkin_max_time),
+
+            checkin_min_time: new Date(this.tolerance.checkin_min_time),
           }
         : undefined,
       state: this.state,
       action: this.action,
       person: this.person,
       place: this.place,
-      created_at: formatDateToDatabase(setDateToLocal(this.created_at)),
-      updated_at: formatDateToDatabase(this.updated_at),
-      sync_date: this.sync_date
-        ? formatDateToDatabase(setDateToLocal(this.sync_date))
-        : undefined,
-      deleted_at: this.deleted_at
-        ? formatDateToDatabase(setDateToLocal(this.deleted_at))
-        : undefined,
+      created_at: new Date(this.created_at),
+      updated_at: this.updated_at,
+      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
+      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
     };
   }
 
@@ -160,36 +151,29 @@ export class BookingParsedDto {
       uuid: this.uuid,
       event: this.#event,
       email: this.#email,
-      start_date: formatDateToDatabase(setDateToLocal(this.start_date)),
-      end_date: formatDateToDatabase(setDateToLocal(this.end_date)),
+      start_date: new Date(this.start_date),
+      end_date: new Date(this.end_date),
       tolerance: this.tolerance
-        ? JSON.stringify({
+        ? {
             ...this.tolerance,
-            checkin_max_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_max_time),
-            ),
-            checkin_min_time: formatDateToDatabase(
-              setDateToLocal(this.tolerance.checkin_min_time),
-            ),
-          })
+            checkin_max_time: new Date(this.tolerance.checkin_max_time),
+
+            checkin_min_time: new Date(this.tolerance.checkin_min_time),
+          }
         : undefined,
       state: this.state,
       action: this.action,
-      person: JSON.stringify(this.person),
-      place: JSON.stringify(this.place),
-      created_at: formatDateToDatabase(setDateToLocal(this.created_at)),
-      updated_at: formatDateToDatabase(this.updated_at),
-      sync_date: this.sync_date
-        ? formatDateToDatabase(setDateToLocal(this.sync_date))
-        : undefined,
-      deleted_at: this.deleted_at
-        ? formatDateToDatabase(setDateToLocal(this.deleted_at))
-        : undefined,
+      person: this.person,
+      place: this.place,
+      created_at: new Date(this.created_at),
+      updated_at: new Date(this.updated_at),
+      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
+      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
     };
   }
 
   static buildFromJson(json: any) {
-    const tolerance = json.tolerance ? JSON.parse(json.tolerance) : null;
+    const tolerance = json.tolerance;
     if (tolerance) {
       tolerance.checkin_max_time = new Date(tolerance.checkin_max_time);
       tolerance.checkin_min_time = new Date(tolerance.checkin_min_time);
@@ -204,8 +188,8 @@ export class BookingParsedDto {
       tolerance: tolerance ? tolerance : null,
       state: json.state,
       action: json.action,
-      person: JSON.parse(json.person),
-      place: JSON.parse(json.place),
+      person: json.person,
+      place: json.place,
       created_at: new Date(json.created_at),
       updated_at: new Date(json.updated_at),
       deleted_at: json.deleted_at ? new Date(json.deleted_at) : null,

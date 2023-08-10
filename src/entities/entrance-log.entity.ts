@@ -32,5 +32,5 @@ export class EntranceLogEntity {
   event: number;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 }

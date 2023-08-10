@@ -1,8 +1,6 @@
-import { formatDateToDatabase } from '../utils/format-date.util';
 import { Person } from './person.dto';
 import { Place } from './place.dto';
 import { v4 as uuid } from 'uuid';
-import { setDateToLocal } from '../utils/set-date-to-local.util';
 import moment from 'moment';
 
 type RewardProps = {
@@ -154,21 +152,17 @@ export class RewardDto {
       action: this.action,
       awarded_points: this.awarded_points,
       reward_type: this.reward_type,
-      person: JSON.stringify(this.person),
-      place: JSON.stringify(this.place),
-      created_at: formatDateToDatabase(setDateToLocal(this.created_at)),
-      updated_at: formatDateToDatabase(this.updated_at),
-      sync_date: this.sync_date
-        ? formatDateToDatabase(setDateToLocal(this.sync_date))
-        : undefined,
-      deleted_at: this.deleted_at
-        ? formatDateToDatabase(setDateToLocal(this.deleted_at))
-        : undefined,
+      person: this.person,
+      place: this.place,
+      created_at: new Date(this.created_at),
+      updated_at: new Date(this.updated_at),
+      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
+      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
     };
   }
 
   static buildFromJson(json: any) {
-    const tolerance = json.tolerance ? JSON.parse(json.tolerance) : null;
+    const tolerance = json.tolerance;
     if (tolerance) {
       tolerance.checkin_max_time = new Date(tolerance.checkin_max_time);
       tolerance.checkin_min_time = new Date(tolerance.checkin_min_time);
@@ -181,8 +175,8 @@ export class RewardDto {
       reward_type: json.reward_type,
       event: json.event,
       action: json.action,
-      person: JSON.parse(json.person),
-      place: JSON.parse(json.place),
+      person: json.person,
+      place: json.place,
     });
   }
 }

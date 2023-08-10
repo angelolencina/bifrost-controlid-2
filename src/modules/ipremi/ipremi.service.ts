@@ -11,8 +11,8 @@ import { RewardEntity } from './entities/reward.entity';
 import { getStartOfDay } from '../../utils/get-start-of-the-day.util';
 import { getEndOfDay } from '../../utils/get-end-of-the-day.util';
 import { factoryReward } from './factory/reward.factory';
-import moment from 'moment';
-import { ApiIpremi } from './api/ipremi.api-1.config';
+import * as moment from 'moment';
+import { ApiIpremi } from './api/ipremi.api.config';
 
 const EVENT_CHECK_IN = 'checkin';
 const EVENT_BOOKING = 'booking';
@@ -37,6 +37,9 @@ export class IpremiService {
   ) {}
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
+    this.logger.log(
+      `Booking event: ${bookingWebhook.event} action: ${bookingWebhook}`,
+    );
     const bookingParsed = parseBooking(bookingWebhook);
     await this.bookingRepository
       .upsert([bookingParsed.toSaveObject()], ['uuid', 'event', 'email'])
@@ -87,6 +90,8 @@ export class IpremiService {
       return;
     }
     const isNew = webhookEvent.action === ACTION_CREATED;
+    const bookingSaved = await this.bookingRepository.findOne({where: {uuid: webhookEvent.uuid}});
+    console.log(bookingSaved);
     const isBeforehand =
       !!isNew && moment().diff(moment(webhookEvent.start_date), 'days') >= 2;
     if (webhookEvent.action === ACTION_CREATED && isBeforehand) {

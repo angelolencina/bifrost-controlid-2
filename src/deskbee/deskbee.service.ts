@@ -171,7 +171,7 @@ export class DeskbeeService {
     if (!account) throw new Error('Account not found');
     return this.configRepository.save({
       account: account.code,
-      credential: JSON.stringify(this.getEnvCredential()),
+      credential: this.getEnvCredential(),
     });
   }
   getEnvCredential() {

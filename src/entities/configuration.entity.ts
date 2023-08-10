@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { CredentialDto } from '../dto/credential.dto';
 
 @Entity('configurations')
 export class ConfigurationEntity {
@@ -13,7 +14,7 @@ export class ConfigurationEntity {
   id: string;
 
   @Column({ type: 'simple-json', nullable: true })
-  credential: string;
+  credential: CredentialDto;
 
   @Column()
   @Index({ unique: true })
@@ -23,11 +24,11 @@ export class ConfigurationEntity {
   token?: string;
 
   @Column({ type: 'datetime', nullable: true })
-  token_expires_in?: string;
+  token_expires_in?: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 }

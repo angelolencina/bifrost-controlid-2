@@ -7,6 +7,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Person } from '../dto/person.dto';
+import { Place } from '../dto/place.dto';
+import { Tolerance } from '../dto/tolerance.dto';
 
 @Entity('bookings')
 @Index(['uuid', 'event', 'email'], { unique: true })
@@ -21,13 +24,13 @@ export class BookingEntity {
   event: string;
 
   @Column()
-  start_date: string;
+  start_date: Date;
 
   @Column()
-  end_date: string;
+  end_date: Date;
 
-  @Column({ nullable: true })
-  tolerance?: string;
+  @Column({ type: 'simple-json', nullable: true })
+  tolerance?: Tolerance;
 
   @Column()
   state: string;
@@ -39,23 +42,23 @@ export class BookingEntity {
   email: string;
 
   @Column({ type: 'simple-json', nullable: true })
-  person: string;
+  person: Person;
 
   @Column({ nullable: true })
   external_id: string;
 
   @Column({ type: 'simple-json', nullable: true })
-  place: string;
+  place: Place;
 
   @Column({ nullable: true })
-  sync_date?: string;
+  sync_date?: Date;
 
   @UpdateDateColumn()
-  updated_at: string;
+  updated_at: Date;
 
   @CreateDateColumn()
-  created_at: string;
+  created_at: Date;
 
   @DeleteDateColumn({ nullable: true })
-  deleted_at?: string;
+  deleted_at?: Date;
 }

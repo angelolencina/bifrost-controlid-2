@@ -14,7 +14,7 @@ export const getActiveModule = () => {
       inject: [AccountRepository],
       useFactory: async (accountRepo: AccountRepository) => {
         const config = await accountRepo.findOne({
-          where: { code: Not('null') },
+          where: { integration: Not('null') },
         });
         if (config?.integration?.iPremi) {
           return config.integration.iPremi;
@@ -30,7 +30,7 @@ export const getActiveModule = () => {
       inject: [AccountRepository],
       useFactory: async (accountRepo: AccountRepository) => {
         const config = await accountRepo.findOne({
-          where: { code: Not('null') },
+          where: { integration: Not('null') },
         });
         if (config?.integration?.controlidOnPremise) {
           return config.integration.controlidOnPremise;

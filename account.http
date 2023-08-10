@@ -3,7 +3,6 @@ x-signature: {{$dotenv SIGNATURE}}
 content-type: application/json
 
 {
-	"accountCode":"",
 		"integration": {
 		"controlidOnPremise" : {
 			"accessControlByLimit": false,

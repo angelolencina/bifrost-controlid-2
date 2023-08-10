@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigurationEntity } from './entities/configuration.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { apiDeskbee } from './apis/deskbee-base.api';
 import { AccountEntity } from './entities/account.entity';
 import AccountFactory from './factory/account.factory';
@@ -48,7 +48,7 @@ export class AppService {
     const newAccount = AccountFactory.createAccount(account);
     await this.accountRepository.upsert([newAccount.toJson()], ['code']);
     return this.accountRepository.findOne({
-      where: { code: account.accountCode },
+      where: { integration: Not('null') },
     });
   }
 

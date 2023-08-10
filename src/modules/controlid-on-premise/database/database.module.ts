@@ -95,7 +95,7 @@ export const getDataBaseConfig = (databases: any): any => {
       name: 'controlid',
       useFactory: async (accountRepository: Repository<AccountEntity>) => {
         const config = await accountRepository.findOne({
-          where: { code: Not('null') },
+          where: { integration: Not('null') },
         });
         return getDataBaseConfig(
           config?.integration?.controlidOnPremise?.database,

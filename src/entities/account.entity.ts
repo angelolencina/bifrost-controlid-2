@@ -14,7 +14,7 @@ export class AccountEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Index({ unique: true })
   code: string;
 

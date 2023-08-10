@@ -3,13 +3,14 @@ import {
   IsNotEmpty,
   IsNotEmptyObject,
   IsObject,
+  IsOptional,
   ValidateNested,
 } from 'class-validator';
 import { IntegrationRequestDto } from './integration-request.dto';
 import { Type } from 'class-transformer';
 
 export class AccountRequestDto {
-  @IsNotEmpty()
+  @IsOptional()
   accountCode: string;
   @IsNotEmpty()
   @IsDefined()

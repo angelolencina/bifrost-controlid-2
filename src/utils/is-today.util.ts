@@ -1,5 +1,4 @@
-export const isToday = (dateToCheck: string) => {
-  const date = new Date(dateToCheck);
+export const isToday = (date: Date) => {
   const today = new Date();
   return (
     date.getDate() === today.getDate() &&

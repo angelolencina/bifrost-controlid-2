@@ -13,6 +13,8 @@ import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant
 import { DeskbeeService } from '../../deskbee/deskbee.service';
 import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
 import { UserWebhookDto } from '../../dto/user-webhook.dto';
+import { parseBooking } from '../../utils/parse-booking.util';
+import { isToday } from '../../utils/is-today.util';
 
 config();
 
@@ -31,26 +33,27 @@ export class ControlidService {
 
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
-    if (this?.options?.accessControlByLimit) {
-      const userGroups = await this.getUserGroups(
-        bookingWebhook.included.person.email,
-      );
+    const { email } = bookingWebhook.included.person;
+    const {
+      mailsExcluded,
+      deskbeeExcludedGroups,
+      inHomologation,
+      mailsInHomologation,
+      accessControlByLimit,
+    } = this.options;
+    if (accessControlByLimit) {
+      const userGroups = await this.getUserGroups(email);
       bookingWebhook.included.person.groups = userGroups;
       let accessControlOff = false;
 
       const mailInHomologation =
-        this.options?.inHomologation &&
-        this.options.mailsInHomologation.includes(
-          bookingWebhook.included.person.email,
-        );
-      const excludedEmail = this.options?.mailsExcluded.includes(
-        bookingWebhook.included.person.email,
-      );
-      const excludedGroup = this.options.deskbeeExcludedGroups.some((value) =>
-        userGroups.includes(value),
+        inHomologation && mailsInHomologation?.includes(email);
+      const excludedEmail = mailsExcluded?.includes(email);
+      const excludedGroup = deskbeeExcludedGroups?.some((value) =>
+        userGroups?.includes(value),
       );
       accessControlOff = excludedEmail || excludedGroup;
-      if (this.options?.inHomologation) {
+      if (inHomologation) {
         if (mailInHomologation) {
           this.processAccessControl(bookingWebhook);
         }
@@ -86,25 +89,25 @@ export class ControlidService {
   }
 
   async processAccessControl(bookingWebhook: BookingWebhookDto) {
-    // this.logger.log(
-    //   `Processing AccessControl : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
-    // );
-    // const newBooking = parseBooking(bookingWebhook).toSaveObject();
-    // if (isToday(newBooking.start_date) && newBooking.action === 'created') {
-    //   const email = bookingWebhook.included.person.email;
-    //   try {
-    //     await this.grantUserAccessToday(
-    //       email,
-    //       newBooking.start_date,
-    //       newBooking.end_date,
-    //     );
-    //     newBooking.sync_date = formatDateToDatabase(new Date());
-    //   } catch (error) {
-    //     this.logger.error(`Error on grant access to ${email} => ${error}`);
-    //   }
-    // }
-    // newBooking.sync_date = '';
-    // this.bookingRepository.upsert(newBooking, ['uuid', 'event', 'email']);
+    this.logger.log(
+      `Processing AccessControl : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
+    );
+    const newBooking = parseBooking(bookingWebhook).toSaveObject();
+    if (isToday(newBooking.start_date) && newBooking.action === 'created') {
+      const email = bookingWebhook.included.person.email;
+      try {
+        await this.grantUserAccessToday(
+          email,
+          newBooking.start_date,
+          newBooking.end_date,
+        );
+        newBooking.sync_date = new Date();
+      } catch (error) {
+        this.logger.error(`Error on grant access to ${email} => ${error}`);
+      }
+    }
+    newBooking.sync_date = undefined;
+    this.bookingRepository.upsert(newBooking, ['uuid', 'event', 'email']);
   }
 
   async revokeUserAccess(email: string) {

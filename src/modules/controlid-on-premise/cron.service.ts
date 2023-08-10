@@ -17,6 +17,7 @@ import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dt
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date';
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
+import { isToday } from '../../utils/is-today.util';
 
 export class CronService {
   public logger = new Logger('Controlid-Cron-Service');
@@ -138,15 +139,15 @@ export class CronService {
         return;
       }
       try {
-        // if (isToday(booking.start_date)) {
-        //   this.grantUserAccessToday(
-        //     booking.email,
-        //     booking.start_date,
-        //     booking.end_date,
-        //   );
-        //   booking.sync_date = formatDateToDatabase(new Date());
-        //   this.bookingRepository.save(booking);
-        // }
+        if (isToday(booking.start_date)) {
+          this.grantUserAccessToday(
+            booking.email,
+            booking.start_date,
+            booking.end_date,
+          );
+          booking.sync_date = new Date();
+          this.bookingRepository.save(booking);
+        }
       } catch (error) {
         this.logger.error(error);
       }

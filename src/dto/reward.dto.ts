@@ -29,8 +29,8 @@ export class RewardDto {
   #place: Place;
   #created_at: Date;
   #updated_at: Date;
-  #sync_date?: Date | null | undefined;
-  #deleted_at?: Date | null | undefined;
+  #sync_date?: Date | undefined;
+  #deleted_at?: Date | undefined;
   public static BEFORE_BOOKING = 'beforehand_booking';
   public static AWARD_WINNING = 'award_winning';
   public static BY_CHECK_IN = 'by_check_in';
@@ -126,15 +126,15 @@ export class RewardDto {
     return this.#updated_at;
   }
 
-  get deleted_at(): Date | null | undefined {
+  get deleted_at(): Date | undefined {
     return this.#deleted_at;
   }
 
-  get sync_date(): Date | null | undefined {
+  get sync_date(): Date | undefined {
     return this.#sync_date;
   }
 
-  setSync(date: Date | null) {
+  setSync(date: Date) {
     this.#sync_date = date;
   }
 
@@ -154,29 +154,10 @@ export class RewardDto {
       reward_type: this.reward_type,
       person: this.person,
       place: this.place,
-      created_at: new Date(this.created_at),
-      updated_at: new Date(this.updated_at),
-      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
-      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+      sync_date: this.sync_date,
+      deleted_at: this.deleted_at,
     };
-  }
-
-  static buildFromJson(json: any) {
-    const tolerance = json.tolerance;
-    if (tolerance) {
-      tolerance.checkin_max_time = new Date(tolerance.checkin_max_time);
-      tolerance.checkin_min_time = new Date(tolerance.checkin_min_time);
-    }
-    return new RewardDto({
-      id: json.id,
-      booking_uuid: json.uuid,
-      email: json.email,
-      state: json.state,
-      reward_type: json.reward_type,
-      event: json.event,
-      action: json.action,
-      person: json.person,
-      place: json.place,
-    });
   }
 }

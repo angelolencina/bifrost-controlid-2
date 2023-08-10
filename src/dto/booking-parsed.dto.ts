@@ -8,16 +8,16 @@ type BookingProps = {
   uuid: string;
   event: string;
   email: string;
-  start_date: Date;
-  end_date: Date;
-  tolerance: Tolerance | null;
+  start_date: string;
+  end_date: string;
+  tolerance: Tolerance | undefined;
   state: string;
   action: string;
   person: Person;
   place: Place;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 };
 
 export class BookingParsedDto {
@@ -27,31 +27,33 @@ export class BookingParsedDto {
   #email: string;
   #start_date: Date;
   #end_date: Date;
-  #tolerance: Tolerance | null;
+  #tolerance: Tolerance | undefined;
   #state: string;
   #action: string;
   #person: Person;
   #place: Place;
   #created_at: Date;
   #updated_at: Date;
-  #sync_date?: Date | null | undefined;
-  #deleted_at?: Date | null | undefined;
+  #sync_date?: Date | undefined;
+  #deleted_at?: Date | undefined;
 
   constructor(props: BookingProps) {
     this.#id = props?.id ? props.id : uuid();
     this.#uuid = props.uuid;
     this.#event = props.event;
     this.#email = props.email;
-    this.#start_date = props.start_date;
-    this.#end_date = props.end_date;
+    this.#start_date = new Date(props.start_date);
+    this.#end_date = new Date(props.end_date);
     this.#tolerance = props.tolerance;
     this.#state = props.state;
     this.#action = props.action;
     this.#person = props.person;
     this.#place = props.place;
-    this.#created_at = props.created_at;
-    this.#updated_at = props.updated_at;
-    this.#deleted_at = props.deleted_at;
+    this.#created_at = new Date(props.created_at);
+    this.#updated_at = new Date(props.updated_at);
+    this.#deleted_at = props?.deleted_at
+      ? new Date(props.deleted_at)
+      : undefined;
   }
 
   get id(): string {
@@ -78,7 +80,7 @@ export class BookingParsedDto {
     return this.#end_date;
   }
 
-  get tolerance(): Tolerance | null {
+  get tolerance(): Tolerance | undefined {
     return this.#tolerance;
   }
 
@@ -106,15 +108,15 @@ export class BookingParsedDto {
     return this.#updated_at;
   }
 
-  get deleted_at(): Date | null | undefined {
+  get deleted_at(): Date | undefined {
     return this.#deleted_at;
   }
 
-  get sync_date(): Date | null | undefined {
+  get sync_date(): Date | undefined {
     return this.#sync_date;
   }
 
-  setSync(date: Date | null) {
+  setSync(date: Date) {
     this.#sync_date = date;
   }
 
@@ -124,24 +126,17 @@ export class BookingParsedDto {
       uuid: this.uuid,
       event: this.#event,
       email: this.#email,
-      start_date: new Date(this.start_date),
-      end_date: new Date(this.end_date),
-      tolerance: this.tolerance
-        ? {
-            ...this.tolerance,
-            checkin_max_time: new Date(this.tolerance.checkin_max_time),
-
-            checkin_min_time: new Date(this.tolerance.checkin_min_time),
-          }
-        : undefined,
+      start_date: this.start_date,
+      end_date: this.end_date,
+      tolerance: this.tolerance,
       state: this.state,
       action: this.action,
       person: this.person,
       place: this.place,
-      created_at: new Date(this.created_at),
+      created_at: this.created_at,
       updated_at: this.updated_at,
-      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
-      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
+      sync_date: this.sync_date,
+      deleted_at: this.deleted_at,
     };
   }
 
@@ -151,48 +146,17 @@ export class BookingParsedDto {
       uuid: this.uuid,
       event: this.#event,
       email: this.#email,
-      start_date: new Date(this.start_date),
-      end_date: new Date(this.end_date),
-      tolerance: this.tolerance
-        ? {
-            ...this.tolerance,
-            checkin_max_time: new Date(this.tolerance.checkin_max_time),
-
-            checkin_min_time: new Date(this.tolerance.checkin_min_time),
-          }
-        : undefined,
+      start_date: this.start_date,
+      end_date: this.end_date,
+      tolerance: this.tolerance,
       state: this.state,
       action: this.action,
       person: this.person,
       place: this.place,
-      created_at: new Date(this.created_at),
-      updated_at: new Date(this.updated_at),
-      sync_date: this.sync_date ? new Date(this.sync_date) : undefined,
-      deleted_at: this.deleted_at ? new Date(this.deleted_at) : undefined,
+      created_at: this.created_at,
+      updated_at: this.updated_at,
+      sync_date: this.sync_date,
+      deleted_at: this.deleted_at,
     };
-  }
-
-  static buildFromJson(json: any) {
-    const tolerance = json.tolerance;
-    if (tolerance) {
-      tolerance.checkin_max_time = new Date(tolerance.checkin_max_time);
-      tolerance.checkin_min_time = new Date(tolerance.checkin_min_time);
-    }
-    return new BookingParsedDto({
-      id: json.id,
-      uuid: json.uuid,
-      event: json.event,
-      email: json.email,
-      start_date: new Date(json.start_date),
-      end_date: new Date(json.end_date),
-      tolerance: tolerance ? tolerance : null,
-      state: json.state,
-      action: json.action,
-      person: json.person,
-      place: json.place,
-      created_at: new Date(json.created_at),
-      updated_at: new Date(json.updated_at),
-      deleted_at: json.deleted_at ? new Date(json.deleted_at) : null,
-    });
   }
 }

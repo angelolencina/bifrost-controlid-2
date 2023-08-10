@@ -139,24 +139,4 @@ export class BookingParsedDto {
       deleted_at: this.deleted_at,
     };
   }
-
-  toSaveObject() {
-    return {
-      id: this.id,
-      uuid: this.uuid,
-      event: this.#event,
-      email: this.#email,
-      start_date: this.start_date,
-      end_date: this.end_date,
-      tolerance: this.tolerance,
-      state: this.state,
-      action: this.action,
-      person: this.person,
-      place: this.place,
-      created_at: this.created_at,
-      updated_at: this.updated_at,
-      sync_date: this.sync_date,
-      deleted_at: this.deleted_at,
-    };
-  }
 }

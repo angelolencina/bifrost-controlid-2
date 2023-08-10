@@ -20,7 +20,7 @@ import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
 
 export class CronService {
-  public logger = new Logger('Controlid-Cron-Service');
+  public logger = new Logger('controlid-cron-service');
   constructor(
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
     private readonly deskbeeService: DeskbeeService,

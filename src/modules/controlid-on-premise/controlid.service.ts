@@ -92,7 +92,7 @@ export class ControlidService {
     this.logger.log(
       `Processing AccessControl : ${bookingWebhook.resource.uuid} - ${bookingWebhook.included.status.name} - ${bookingWebhook.included.person.email}`,
     );
-    const newBooking = parseBooking(bookingWebhook).toSaveObject();
+    const newBooking = parseBooking(bookingWebhook).toJson();
     if (isToday(newBooking.start_date) && newBooking.action === 'created') {
       const email = bookingWebhook.included.person.email;
       try {

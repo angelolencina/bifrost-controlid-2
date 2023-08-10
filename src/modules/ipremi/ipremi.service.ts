@@ -62,18 +62,21 @@ export class IpremiService {
   }
 
   async processCheckInReward(webhookEvent: BookingRewardDto) {
-    const isRewardAwarded = await this.isCheckInExists(
+    const isRewardAwarded = await this.isCheckWasAwarded(
       webhookEvent.uuid,
       webhookEvent.email,
     );
-    this.logger.log(
-      `process reward email: ${webhookEvent.email} was reward previous awarded?: ${isRewardAwarded}`,
-    );
     if (!isRewardAwarded) {
+      this.logger.log(
+        `process reward email: ${webhookEvent.email} by ${BY_CHECK_IN}`,
+      );
       return this.rewardRepo.saveOrUpdate(
         factoryReward(webhookEvent, BY_CHECK_IN),
       );
     }
+    this.logger.log(
+      `process reward: checking booking ${webhookEvent.uuid} by ${webhookEvent.email}  doesn't follow the rules`,
+    );
   }
 
   async processBookingReward(webhookEvent: BookingRewardDto) {
@@ -96,13 +99,13 @@ export class IpremiService {
     );
   }
 
-  async isCheckInExists(bookingUuid: string, email: string) {
+  async isCheckWasAwarded(bookingUuid: string, email: string) {
     const startOfTheDay = getStartOfDay();
     const endOfTheDay = getEndOfDay();
-    return this.bookingRepository
+    return this.rewardRepo
       .createQueryBuilder('bookings')
       .where(
-        'uuid = :uuid and event = :event and email = :email and action = :action',
+        'booking_uuid = :uuid and event = :event and email = :email and action = :action',
         {
           uuid: bookingUuid,
           event: EVENT_CHECK_IN,

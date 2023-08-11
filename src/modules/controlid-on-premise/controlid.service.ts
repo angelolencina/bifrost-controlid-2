@@ -11,10 +11,10 @@ import { BookingRepository } from '../../database/repositories/booking.repositor
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
 
 import { DeskbeeService } from '../../deskbee/deskbee.service';
-import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
 import { UserWebhookDto } from '../../dto/user-webhook.dto';
 import { parseBooking } from '../../utils/parse-booking.util';
 import { isToday } from '../../utils/is-today.util';
+import { ControlidOnPremiseDto } from './dto/controlid-on-premise-request.dto';
 
 config();
 

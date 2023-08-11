@@ -7,9 +7,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ControlidDatabaseRequestDto } from './controlid-database-request.dto';
-import { ControlidOnPremiseDto } from './controlid-on-premise-request.dto';
-import { IpremiDto } from './ipremi.dto';
+import { IpremiDto } from '../modules/ipremi/dto/ipremi.dto';
+import { ControlidOnPremiseDto } from '../modules/controlid-on-premise/dto/controlid-on-premise-request.dto';
 
 export class IntegrationRequestDto {
   @IsOptional()

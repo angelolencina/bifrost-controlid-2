@@ -6,7 +6,7 @@ import { BookingEntity } from '../../entities/booking.entity';
 import { RewardEntity } from './entities/reward.entity';
 import * as Joi from 'joi';
 import { ConfigModule } from '@nestjs/config';
-import { IpremiDto } from '../../dto/ipremi.dto';
+import { IpremiDto } from './dto/ipremi.dto';
 import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
 import IpremiAsyncOptions from './type/ipremi-async-options.type';
 import { AccountRepository } from '../../database/repositories/account.repository';

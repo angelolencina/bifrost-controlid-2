@@ -1,11 +1,9 @@
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { Not, Repository } from 'typeorm';
-import { AccountEntity } from '../entities/account.entity';
+import { Not } from 'typeorm';
 import { ControlidModule } from '../modules/controlid-on-premise/controlid.module';
 import { IpremiModule } from '../modules/ipremi/ipremi.module';
 import { AccountRepository } from '../database/repositories/account.repository';
-import { ControlidOnPremiseDto } from '../dto/controlid-on-premise-request.dto';
-import { IpremiDto } from '../dto/ipremi.dto';
+import { IpremiDto } from '../modules/ipremi/dto/ipremi.dto';
+import { ControlidOnPremiseDto } from '../modules/controlid-on-premise/dto/controlid-on-premise-request.dto';
 
 export const getActiveModule = () => {
   const modules = [];

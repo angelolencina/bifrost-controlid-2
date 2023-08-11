@@ -11,6 +11,7 @@ import { DeskbeeModule } from './deskbee/deskbee.module';
 import GatewayDatabaseModule from './database/gateway-database.module';
 import { AccountEntity } from './entities/account.entity';
 import { getActiveModule } from './providers/module.provider';
+import { ControlidCloudModule } from './modules/controlid-cloud/controlid-cloud.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { getActiveModule } from './providers/module.provider';
     DeskbeeModule,
     GatewayDatabaseModule,
     ...getActiveModule(),
+    ControlidCloudModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -5,7 +5,7 @@ import { CronJob } from 'cron';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { RewardEntity } from './entities/reward.entity';
 import { ApiIpremi } from './api/ipremi.api.config';
-import { IpremiDto } from '../../dto/ipremi.dto';
+import { IpremiDto } from './dto/ipremi.dto';
 import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
 import { sendDataFactory } from './factory/send-data.factory';
 import { convertToDatabaseFormat } from './utils/convert-to-database-format.util';

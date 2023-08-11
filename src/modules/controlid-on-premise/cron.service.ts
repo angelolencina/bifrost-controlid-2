@@ -13,11 +13,11 @@ import ControlidRepository from './database/repositories/controlid.repository';
 import { ApiControlid } from './api/controlid.api';
 import { CheckInDto } from '../../dto/checkin.dto';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
-import { ControlidOnPremiseDto } from '../../dto/controlid-on-premise-request.dto';
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date';
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
+import { ControlidOnPremiseDto } from './dto/controlid-on-premise-request.dto';
 
 @Injectable()
 export class CronService {

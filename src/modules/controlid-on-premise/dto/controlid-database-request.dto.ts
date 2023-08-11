@@ -9,7 +9,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { MysqlRequestDto } from './mysql-request.dto';
-import { SqliteRequestDto } from './sqlite-request.dto';
+import { SqliteRequestDto } from '../../../dto/sqlite-request.dto';
 
 export class ControlidDatabaseRequestDto {
   @ValidateIf((o) => !o.sqlite)

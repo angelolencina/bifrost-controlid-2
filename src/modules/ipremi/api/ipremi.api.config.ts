@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { IPREMI_CONFIG_OPTIONS } from '../constants/ipremi-options.constant';
-import { IpremiDto } from '../../../dto/ipremi.dto';
+import { IpremiDto } from '../dto/ipremi.dto';
 import { SendDataDto, SendDataProps } from '../dto/send-data.dto';
 import { ParticipantDataDto } from '../dto/participant-data.dto';
 import { DoParticipantCreditDataDto } from '../dto/do-participant-credit-data.dto';

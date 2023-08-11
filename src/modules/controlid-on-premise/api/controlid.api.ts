@@ -2,8 +2,8 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import * as https from 'https';
 import ControlidApiInterface from '../../../interfaces/controlid-api.interface';
-import { ControlidOnPremiseDto } from '../../../dto/controlid-on-premise-request.dto';
 import { CONTROLID_CONFIG_OPTIONS } from '../constants/controlid-options.constant';
+import { ControlidOnPremiseDto } from '../dto/controlid-on-premise-request.dto';
 
 @Injectable()
 export class ApiControlid implements ControlidApiInterface {

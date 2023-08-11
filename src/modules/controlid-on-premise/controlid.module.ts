@@ -1,15 +1,15 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { ControlidService } from './controlid.service';
+import { ControlidOnPremiseService } from './controlid.service';
 import { ApiControlid } from './api/controlid.api';
 import { BookingEntity } from '../../entities/booking.entity';
 import { TypeOrmModule, getRepositoryToken } from '@nestjs/typeorm';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
-import { MySqlControlidModule } from './database/mysql.module';
+import { MySqlControlidOnPremiseModule } from './database/mysql.module';
 import { DeskbeeModule } from '../../deskbee/deskbee.module';
 import { CronService } from './cron.service';
 import { AccountEntity } from '../../entities/account.entity';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
-import ControlidAsyncOptions from './types/controlid-async-options.type';
+import ControlidOnPremiseAsyncOptions from './types/controlid-async-options.type';
 import { ConfigurationEntity } from '../../entities/configuration.entity';
 import DatabaseModule from './database/database.module';
 import { Users } from './entities/Users.entity';
@@ -22,10 +22,10 @@ import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
 import { AccountRepository } from '../../database/repositories/account.repository';
 
 @Module({})
-export class ControlidModule {
-  static registerAsync(options: ControlidAsyncOptions): DynamicModule {
+export class ControlidOnPremiseModule {
+  static registerAsync(options: ControlidOnPremiseAsyncOptions): DynamicModule {
     return {
-      module: ControlidModule,
+      module: ControlidOnPremiseModule,
       imports: [
         TypeOrmModule.forFeature([
           ConfigurationEntity,
@@ -45,12 +45,12 @@ export class ControlidModule {
           inject: options.inject,
         },
         AccountRepository,
-        ControlidService,
+        ControlidOnPremiseService,
         ApiControlid,
         ControlidRepository,
         CronService,
       ],
-      exports: [ControlidService],
+      exports: [ControlidOnPremiseService],
     };
   }
 }

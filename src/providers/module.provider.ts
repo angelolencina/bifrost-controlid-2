@@ -1,5 +1,5 @@
 import { Not } from 'typeorm';
-import { ControlidModule } from '../modules/controlid-on-premise/controlid.module';
+import { ControlidOnPremiseModule } from '../modules/controlid-on-premise/controlid.module';
 import { IpremiModule } from '../modules/ipremi/ipremi.module';
 import { AccountRepository } from '../database/repositories/account.repository';
 import { IpremiDto } from '../modules/ipremi/dto/ipremi.dto';
@@ -24,7 +24,7 @@ export const getActiveModule = () => {
   );
 
   modules.push(
-    ControlidModule.registerAsync({
+    ControlidOnPremiseModule.registerAsync({
       inject: [AccountRepository],
       useFactory: async (accountRepo: AccountRepository) => {
         const config = await accountRepo.findOne({

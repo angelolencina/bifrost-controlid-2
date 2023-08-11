@@ -19,7 +19,7 @@ import { ControlidOnPremiseDto } from './dto/controlid-on-premise-request.dto';
 config();
 
 @Injectable()
-export class ControlidService {
+export class ControlidOnPremiseService {
   public logger = new Logger('Controlid-On-Premise-Service');
   constructor(
     @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,

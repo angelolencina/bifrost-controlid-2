@@ -30,4 +30,4 @@ dbProvider.useValue.getConnection((err, connection) => {
   exports: [dbProvider],
   imports: [],
 })
-export class MySqlControlidModule {}
+export class MySqlControlidOnPremiseModule {}

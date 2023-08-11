@@ -16,7 +16,7 @@ export class AppService {
     @InjectRepository(ConfigurationEntity)
     private configRepository: Repository<ConfigurationEntity>,
     @InjectRepository(AccountEntity)
-    private accountRepository: Repository<AccountEntity>,
+    private accountRepo: Repository<AccountEntity>,
     private readonly deskbeeService: DeskbeeService,
   ) {
     apiDeskbee.interceptors.request.use(
@@ -45,9 +45,19 @@ export class AppService {
 
   async saveAccount(account: AccountRequestDto) {
     this.logger.log(`saveAccount account: ${account.accountCode}`);
+    const existingIntegration = await this.accountRepo.findOne({
+      where: { integration: Not('null') },
+    });
     const newAccount = AccountFactory.createAccount(account);
-    await this.accountRepository.upsert([newAccount.toJson()], ['code']);
-    return this.accountRepository.findOne({
+    if (existingIntegration) {
+      const { integration } = existingIntegration;
+      await this.accountRepo.update(existingIntegration.id, { integration });
+      return this.accountRepo.findOne({
+        where: { id: existingIntegration.id },
+      });
+    }
+    await this.accountRepo.upsert([newAccount.toJson()], ['code']);
+    return this.accountRepo.findOne({
       where: { integration: Not('null') },
     });
   }

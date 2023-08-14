@@ -5,39 +5,32 @@ import { AccountRepository } from '../database/repositories/account.repository';
 import { IpremiDto } from '../modules/ipremi/dto/ipremi.dto';
 import { ControlidOnPremiseDto } from '../modules/controlid-on-premise/dto/controlid-on-premise-request.dto';
 
+const fetchIntegrationConfig = async (
+  accountRepo: AccountRepository,
+  key: string,
+  defaultDto: any,
+) => {
+  const config: any = await accountRepo.findOne({
+    where: { integration: Not('null') },
+  });
+  return config?.integration?.[key] || defaultDto;
+};
+
 export const getActiveModule = () => {
-  const modules = [];
-  modules.push(
+  return [
     IpremiModule.registerAsync({
       inject: [AccountRepository],
-      useFactory: async (accountRepo: AccountRepository) => {
-        const config = await accountRepo.findOne({
-          where: { integration: Not('null') },
-        });
-        if (config?.integration?.iPremi) {
-          return config.integration.iPremi;
-        }
-
-        return new IpremiDto();
-      },
+      useFactory: async (accountRepo: AccountRepository) =>
+        fetchIntegrationConfig(accountRepo, 'iPremi', new IpremiDto()),
     }),
-  );
-
-  modules.push(
     ControlidOnPremiseModule.registerAsync({
       inject: [AccountRepository],
-      useFactory: async (accountRepo: AccountRepository) => {
-        const config = await accountRepo.findOne({
-          where: { integration: Not('null') },
-        });
-        if (config?.integration?.controlidOnPremise) {
-          return config.integration.controlidOnPremise;
-        }
-
-        return new ControlidOnPremiseDto();
-      },
+      useFactory: async (accountRepo: AccountRepository) =>
+        fetchIntegrationConfig(
+          accountRepo,
+          'controlidOnPremise',
+          new ControlidOnPremiseDto(),
+        ),
     }),
-  );
-
-  return modules;
+  ];
 };

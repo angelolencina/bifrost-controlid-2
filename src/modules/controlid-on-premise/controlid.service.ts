@@ -34,34 +34,41 @@ export class ControlidOnPremiseService {
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
     const { email } = bookingWebhook.included.person;
+    const userGroups = await this.getUserGroups(email);
+    bookingWebhook.included.person.groups = userGroups;
+
     const {
       mailsExcluded,
       deskbeeExcludedGroups,
       inHomologation,
       mailsInHomologation,
       accessControlByLimit,
+      limitAccessControlToGroupsDeskbee,
+      deskbeeGroupUuids,
     } = this.options;
-    if (accessControlByLimit) {
-      const userGroups = await this.getUserGroups(email);
-      bookingWebhook.included.person.groups = userGroups;
-      let accessControlOff = false;
 
-      const mailInHomologation =
-        inHomologation && mailsInHomologation?.includes(email);
-      const excludedEmail = mailsExcluded?.includes(email);
-      const excludedGroup = deskbeeExcludedGroups?.some((value) =>
-        userGroups?.includes(value),
-      );
-      accessControlOff = excludedEmail || excludedGroup;
+    const isExcludedEmail = mailsExcluded?.includes(email);
+    const isInHomologationEmail =
+      inHomologation && mailsInHomologation?.includes(email);
+    const isExcludedGroup = deskbeeExcludedGroups?.some((group) =>
+      userGroups?.includes(group),
+    );
+    const isAccessControlLimitedToGroup =
+      limitAccessControlToGroupsDeskbee &&
+      userGroups?.some((uuid: string) => deskbeeGroupUuids?.includes(uuid));
+
+    if (accessControlByLimit) {
       if (inHomologation) {
-        if (mailInHomologation) {
+        if (isInHomologationEmail) {
           this.processAccessControl(bookingWebhook);
         }
         return;
       }
-      if (accessControlOff) {
-        return;
+
+      if (!isExcludedEmail && !isExcludedGroup) {
+        this.processAccessControl(bookingWebhook);
       }
+    } else if (isAccessControlLimitedToGroup) {
       this.processAccessControl(bookingWebhook);
     }
   }

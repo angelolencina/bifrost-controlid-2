@@ -5,6 +5,7 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  ValidateIf,
 } from 'class-validator';
 import { ControlidDatabaseRequestDto } from './controlid-database-request.dto';
 import { Type } from 'class-transformer';
@@ -16,7 +17,15 @@ export class ControlidOnPremiseDto {
   accessControlByLimit: boolean;
   @IsOptional()
   @IsBoolean()
-  accessControlByGroup: boolean;
+  accessControlByControlidGroup: boolean;
+  @IsOptional()
+  @IsBoolean()
+  limitAccessControlToGroupsDeskbee: boolean;
+  @ValidateIf((o) => o.limitAccessControlToGroupsDeskbee)
+  @IsNotEmpty()
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  deskbeeGroupUuids: string[];
   @IsNotEmpty()
   @IsBoolean()
   automatedCheckIn: boolean;

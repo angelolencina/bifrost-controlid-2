@@ -1,19 +1,18 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { BookingWebhookDto } from '../../dto/booking-webhook.dto';
-import { DeskbeeService } from '../../deskbee/deskbee.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { BookingEntity } from '../../entities/booking.entity';
 import { getStartOfDay } from '../../utils/get-start-of-the-day.util';
 import { getEndOfDay } from '../../utils/get-end-of-the-day.util';
 import { factoryReward } from './factory/reward.factory';
 
-import { ApiIpremi } from './api/ipremi.api.config';
 import { parseBookingReward } from './utils/parse-booking-reward.util';
 import { BookingRewardDto } from './dto/booking-reward.dto';
 import { RewardRepository } from './repositories/reward.repository';
-import { CronService } from './cron.service';
+import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
+import { IpremiDto } from './dto/ipremi.dto';
 
 const EVENT_CHECK_IN = 'checkin';
 
@@ -25,45 +24,48 @@ const BY_CHECK_IN = 'by_check_in';
 export class IpremiService {
   public logger = new Logger('IpremiService');
   constructor(
-    private readonly deskbeeService: DeskbeeService,
-    private readonly apiIpremi: ApiIpremi,
+    @Inject(IPREMI_CONFIG_OPTIONS)
+    private options: IpremiDto,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
     private readonly rewardRepo: RewardRepository,
-    private readonly cronService: CronService,
   ) {}
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
-    this.logger.log(
-      `Booking event: ${bookingWebhook.event} action: ${bookingWebhook.resource.action}`,
-    );
-    const bookingParsed = parseBookingReward(bookingWebhook);
-    await this.bookingRepository
-      .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
-      .then(() => {
-        this.logger.log(
-          `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
-        );
-      });
-    this.processBookingReward(bookingParsed);
+    if (this.options?.bankAccountId && this.options?.profileId) {
+      this.logger.log(
+        `Booking event: ${bookingWebhook.event} action: ${bookingWebhook.resource.action}`,
+      );
+      const bookingParsed = parseBookingReward(bookingWebhook);
+      await this.bookingRepository
+        .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
+        .then(() => {
+          this.logger.log(
+            `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
+          );
+        });
+      this.processBookingReward(bookingParsed);
+    }
   }
 
   @OnEvent('checkin')
   async handleCheckin(bookingWebhook: BookingWebhookDto) {
-    const bookingParsed = parseBookingReward(bookingWebhook);
-    await this.bookingRepository
-      .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
-      .then(() => {
-        this.logger.log(
-          `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
-        );
-      });
+    if (this.options?.bankAccountId && this.options?.profileId) {
+      const bookingParsed = parseBookingReward(bookingWebhook);
+      await this.bookingRepository
+        .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
+        .then(() => {
+          this.logger.log(
+            `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
+          );
+        });
 
-    if (
-      bookingParsed.action === EVENT_CHECK_IN &&
-      bookingParsed.action === 'checkin'
-    ) {
-      this.processCheckInReward(bookingParsed);
+      if (
+        bookingParsed.action === EVENT_CHECK_IN &&
+        bookingParsed.action === 'checkin'
+      ) {
+        this.processCheckInReward(bookingParsed);
+      }
     }
   }
 

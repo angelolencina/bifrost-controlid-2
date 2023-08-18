@@ -22,7 +22,6 @@ export class AppController {
     this.eventEmitter.emit(`${payload.event}`, payload);
   }
 
-  @Public()
   @Post('accounts')
   saveAccount(@Body() account: AccountRequestDto) {
     return this.appService.saveAccount(account);

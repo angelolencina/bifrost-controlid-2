@@ -41,7 +41,7 @@ export class RewardRepository extends Repository<RewardEntity> {
   getRewardsToRegisterUsers(): Promise<RewardEntity[]> {
     return this.rewardRepo
       .createQueryBuilder()
-      .where('user_id IS NULL')
+      .where('userId IS NULL')
       .groupBy('email')
       .getMany();
   }

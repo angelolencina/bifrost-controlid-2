@@ -28,6 +28,7 @@ export class AuthGuard implements CanActivate {
       return true;
     }
     const request = context.switchToHttp().getRequest();
+
     if (!request.headers['x-hub-signature'] || !request.rawBody) {
       this.logger.warn('Missing signature or raw body.');
       return false;

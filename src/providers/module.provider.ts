@@ -16,7 +16,7 @@ const fetchIntegrationConfig = async (
   return config?.integration?.[key] || defaultDto;
 };
 
-export const getActiveModule = () => {
+export const getActiveModules = () => {
   return [
     IpremiModule.registerAsync({
       inject: [AccountRepository],

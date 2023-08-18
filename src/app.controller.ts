@@ -3,6 +3,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AppService } from './app.service';
 import { AccountRequestDto } from './dto/account-request.dto';
+import { Public } from './decorators/is-public.decorator';
 
 @Controller()
 export class AppController {
@@ -21,6 +22,7 @@ export class AppController {
     this.eventEmitter.emit(`${payload.event}`, payload);
   }
 
+  @Public()
   @Post('accounts')
   saveAccount(@Body() account: AccountRequestDto) {
     return this.appService.saveAccount(account);

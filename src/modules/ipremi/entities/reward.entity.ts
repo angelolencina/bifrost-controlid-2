@@ -4,11 +4,13 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Person } from '../../../dto/person.dto';
 import { Place } from '../../../dto/place.dto';
+import { IpremiUserEntity } from './ipremi-user.entity';
 
 @Entity('rewards')
 @Index(['booking_uuid', 'event', 'action', 'email'], { unique: true })
@@ -25,19 +27,14 @@ export class RewardEntity {
   @Column()
   state: string;
 
-  @Column({ nullable: true })
-  @Index()
-  participant_id?: number;
-
-  @Column({ nullable: true, type: 'uuid' })
-  @Index()
-  participant_token?: string;
-
-  @Column({ nullable: true, type: 'datetime' })
-  participant_token_valid_through_date?: Date;
-
   @Column()
   action: string;
+
+  @ManyToOne(() => IpremiUserEntity, (user) => user.rewards, {
+    cascade: true,
+    nullable: true,
+  })
+  user: IpremiUserEntity;
 
   @Column()
   email: string;

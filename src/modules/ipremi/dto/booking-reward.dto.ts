@@ -5,6 +5,7 @@ import * as moment from 'moment';
 
 const ACTION_CREATED = 'created';
 const ACTION_DELETED = 'deleted';
+const STATE_FALL = 'fall';
 
 type BookingProps = {
   id?: string;
@@ -113,11 +114,11 @@ export class BookingRewardDto {
   }
 
   isNew(): boolean {
-    return this?.action === ACTION_CREATED;
+    return this.action === ACTION_CREATED;
   }
 
   isDeleted(): boolean {
-    return this?.action === ACTION_DELETED;
+    return this?.action === ACTION_DELETED || this.state === STATE_FALL;
   }
 
   isBeforehand(): boolean {

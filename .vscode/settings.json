@@ -18,6 +18,7 @@
     "Loginattemptlogs",
     "Logmessages",
     "Modeidentificationrules",
+    "opentelemetry",
     "Operatortypegroups",
     "Operatortypemodules",
     "Operatortypes",

@@ -4,9 +4,6 @@ import { DeskbeeModule } from '../../deskbee/deskbee.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BookingEntity } from '../../entities/booking.entity';
 import { RewardEntity } from './entities/reward.entity';
-import * as Joi from 'joi';
-import { ConfigModule } from '@nestjs/config';
-import { IpremiDto } from './dto/ipremi.dto';
 import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
 import IpremiAsyncOptions from './type/ipremi-async-options.type';
 import { AccountRepository } from '../../database/repositories/account.repository';
@@ -14,6 +11,8 @@ import { AccountEntity } from '../../entities/account.entity';
 import { ApiIpremi } from './api/ipremi.api.config';
 import { RewardRepository } from './repositories/reward.repository';
 import { CronService } from './cron.service';
+import { IpremiController } from './ipremi.controller';
+import { IpremiUserEntity } from './entities/ipremi-user.entity';
 
 @Module({})
 export class IpremiModule {
@@ -21,9 +20,15 @@ export class IpremiModule {
     return {
       module: IpremiModule,
       imports: [
-        TypeOrmModule.forFeature([BookingEntity, RewardEntity, AccountEntity]),
+        TypeOrmModule.forFeature([
+          BookingEntity,
+          RewardEntity,
+          AccountEntity,
+          IpremiUserEntity,
+        ]),
         DeskbeeModule,
       ],
+      controllers: [IpremiController],
       providers: [
         {
           provide: IPREMI_CONFIG_OPTIONS,

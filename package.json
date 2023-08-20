@@ -1,7 +1,7 @@
 {
-  "name": "bifrost 2",
-  "version": "1.0.0",
-  "description": "Gateway for connection between the control id and deskbee",
+  "name": "bifrost",
+  "version": "2.0.0",
+  "description": "Gateway for connection between deskbee and others services",
   "author": "Angelo Lencina",
   "email": "angelolencina@gmail.com",
   "private": true,

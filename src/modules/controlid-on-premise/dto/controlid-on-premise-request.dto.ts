@@ -15,6 +15,9 @@ export class ControlidOnPremiseDto {
   @IsNotEmpty()
   @IsBoolean()
   accessControlByLimit: boolean;
+  @IsNotEmpty()
+  @IsBoolean()
+  isActive: boolean;
   @IsOptional()
   @IsBoolean()
   accessControlByControlidGroup: boolean;

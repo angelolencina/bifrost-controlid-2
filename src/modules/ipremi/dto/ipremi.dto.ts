@@ -1,6 +1,26 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsUUID,
+  ValidateIf,
+} from 'class-validator';
 
 export class IpremiDto {
+  @IsOptional()
+  @IsBoolean()
+  limitToGroupsDeskbee: boolean;
+  @ValidateIf((o) => o.limitToGroupsDeskbee)
+  @IsNotEmpty()
+  @IsArray()
+  @IsUUID(undefined, { each: true })
+  deskbeeGroupUuids: string[];
+  @IsNotEmpty()
+  @IsBoolean()
+  isActive: boolean;
   @IsNotEmpty()
   @IsNumber()
   campaignId: number;

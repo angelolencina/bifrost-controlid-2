@@ -13,6 +13,7 @@ import { BookingRewardDto } from './dto/booking-reward.dto';
 import { RewardRepository } from './repositories/reward.repository';
 import { IPREMI_CONFIG_OPTIONS } from './constants/ipremi-options.constant';
 import { IpremiDto } from './dto/ipremi.dto';
+import { DeskbeeService } from '../../deskbee/deskbee.service';
 
 const EVENT_CHECK_IN = 'checkin';
 
@@ -28,22 +29,37 @@ export class IpremiService {
     private options: IpremiDto,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
+    private readonly deskbeeService: DeskbeeService,
     private readonly rewardRepo: RewardRepository,
   ) {}
   @OnEvent('booking')
   async handleBooking(bookingWebhook: BookingWebhookDto) {
-    if (this.options?.bankAccountId && this.options?.profileId) {
-      this.logger.log(
-        `Booking event: ${bookingWebhook.event} action: ${bookingWebhook.resource.action}`,
-      );
-      const bookingParsed = parseBookingReward(bookingWebhook);
-      await this.bookingRepository
-        .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
-        .then(() => {
-          this.logger.log(
-            `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
-          );
-        });
+    const {
+      bankAccountId,
+      profileId,
+      limitToGroupsDeskbee,
+      deskbeeGroupUuids,
+      isActive,
+    } = this.options || {};
+
+    if (!bankAccountId || !profileId || !isActive) return;
+
+    const { email } = bookingWebhook.included.person;
+    const userGroups = await this.getUserGroups(email);
+    bookingWebhook.included.person.groups = userGroups;
+
+    const isLimitedToGroup =
+      limitToGroupsDeskbee &&
+      userGroups?.some((uuid: string) => deskbeeGroupUuids?.includes(uuid));
+
+    this.logger.log(
+      `Booking event: ${bookingWebhook.event} action: ${bookingWebhook.resource.action}`,
+    );
+
+    const bookingParsed = parseBookingReward(bookingWebhook);
+    await this.upsertBooking(bookingParsed);
+
+    if ((!limitToGroupsDeskbee || isLimitedToGroup) && isActive) {
       this.processBookingReward(bookingParsed);
     }
   }
@@ -131,5 +147,19 @@ export class IpremiService {
         },
       )
       .getExists();
+  }
+
+  getUserGroups(email: string) {
+    return this.deskbeeService.getUserGroups(email);
+  }
+
+  async upsertBooking(bookingParsed: BookingRewardDto) {
+    return this.bookingRepository
+      .upsert([bookingParsed.toJson()], ['uuid', 'event', 'email'])
+      .then(() => {
+        this.logger.log(
+          `${bookingParsed.event} : ${bookingParsed.uuid} action: ${bookingParsed.action} Saved!`,
+        );
+      });
   }
 }

@@ -47,9 +47,13 @@ export class ApiControlidCloud implements ControlidApiInterface {
       email: apiConfig?.user,
       password: apiConfig.password,
     };
+
     return axios
       .post(`${apiConfig?.host}/operators/login`, body)
-      .then((res) => res.data?.data?.token);
+      .then((res) => res.data?.data?.token)
+      .catch((e) => {
+        this.logger.error(`Error to get bearer token ${e?.message}`);
+      });
   }
 
   async getUserPassLogs(): Promise<TLog[]> {

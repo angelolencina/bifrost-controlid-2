@@ -1,6 +1,14 @@
 import { BookingParsedDto } from '../dto/booking-parsed.dto';
+import { BookingWebhookDto } from '../dto/booking-webhook.dto';
 export default interface IntegrationInterface {
-  handleAccessControl(booking: BookingParsedDto): void;
+  handleBooking(booking: BookingWebhookDto): void;
+  handleUser(booking: BookingWebhookDto): void;
   automateCheckIn(): void;
   generateQrCode(): void;
+  processAccessControl(booking: BookingWebhookDto): void;
+  shouldProcessAccessControl(
+    isInHomologationEmail: boolean,
+    isExcludedEmail: boolean,
+    isExcludedGroup: boolean,
+  ): boolean;
 }

@@ -7,12 +7,11 @@ import { AccountEntity } from '../../entities/account.entity';
 import { BookingEntity } from '../../entities/booking.entity';
 import { ConfigurationEntity } from '../../entities/configuration.entity';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
-import { ApiControlid } from '../controlid-on-premise/api/controlid.api';
-import { CONTROLID_CONFIG_OPTIONS } from '../controlid-on-premise/constants/controlid-options.constant';
-import { ControlidOnPremiseService } from '../controlid-on-premise/controlid.service';
-import { CronService } from '../controlid-on-premise/cron.service';
-import ControlidRepository from '../controlid-on-premise/database/repositories/controlid.repository';
 import ControlidCloudAsyncOptions from './types/controlid-cloud-async-options.type';
+import { ApiControlidCloud } from './api/controlid.api';
+import { ControlidCloudService } from './controlid-cloud.service';
+import { CronService } from './cron.service';
+import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-cloud-options.constant';
 
 @Module({})
 export class ControlidCloudModule {
@@ -35,13 +34,12 @@ export class ControlidCloudModule {
           useFactory: options.useFactory,
           inject: options.inject,
         },
+        ControlidCloudService,
         AccountRepository,
-        ControlidOnPremiseService,
-        ApiControlid,
-        ControlidRepository,
+        ApiControlidCloud,
         CronService,
       ],
-      exports: [ControlidOnPremiseService],
+      exports: [ControlidCloudService],
     };
   }
 }

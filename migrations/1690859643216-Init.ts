@@ -11,10 +11,10 @@ export class Init1690859643216 implements MigrationInterface {
       `CREATE UNIQUE INDEX "IDX_d68ca471f015bbbce09ba5991a" ON "bookings" ("uuid", "event", "email") `,
     );
     await queryRunner.query(
-      `CREATE TABLE "configurations" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "credential" text, "account" varchar NOT NULL, "token" varchar, "token_expires_in" datetime, "updated_at" datetime NOT NULL DEFAULT (datetime('now')), "created_at" datetime NOT NULL DEFAULT (datetime('now')))`,
+      `CREATE TABLE "configurations" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "credential" text, "system" varchar NOT NULL, "token" varchar, "token_expires_in" datetime, "updated_at" datetime NOT NULL DEFAULT (datetime('now')), "created_at" datetime NOT NULL DEFAULT (datetime('now')))`,
     );
     await queryRunner.query(
-      `CREATE UNIQUE INDEX "IDX_96fa4b5625ef429ec67cbeeece" ON "configurations" ("account") `,
+      `CREATE UNIQUE INDEX "IDX_96fa4b5625ef429ec67cbeeece" ON "configurations" ("system") `,
     );
     await queryRunner.query(
       `CREATE TABLE "entranceLogs" ("id" integer PRIMARY KEY AUTOINCREMENT NOT NULL, "email" varchar NOT NULL, "id_device" integer NOT NULL, "device_name" varchar NOT NULL, "reader" integer NOT NULL, "id_area" integer NOT NULL, "area" varchar NOT NULL, "event" integer NOT NULL, "created_at" datetime NOT NULL DEFAULT (datetime('now')))`,

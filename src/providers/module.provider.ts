@@ -4,6 +4,8 @@ import { IpremiModule } from '../modules/ipremi/ipremi.module';
 import { AccountRepository } from '../database/repositories/account.repository';
 import { IpremiDto } from '../modules/ipremi/dto/ipremi.dto';
 import { ControlidOnPremiseDto } from '../modules/controlid-on-premise/dto/controlid-on-premise-request.dto';
+import { ControlidCloudModule } from '../modules/controlid-cloud/controlid-cloud.module';
+import { ControlidCloudDto } from '../modules/controlid-cloud/dto/controlid-cloud-request.dto';
 
 const fetchIntegrationConfig = async (
   accountRepo: AccountRepository,
@@ -30,6 +32,16 @@ export const getActiveModules = () => {
           accountRepo,
           'controlidOnPremise',
           new ControlidOnPremiseDto(),
+        ),
+    }),
+
+    ControlidCloudModule.registerAsync({
+      inject: [AccountRepository],
+      useFactory: async (accountRepo: AccountRepository) =>
+        fetchIntegrationConfig(
+          accountRepo,
+          'controlidCloud',
+          new ControlidCloudDto(),
         ),
     }),
   ];

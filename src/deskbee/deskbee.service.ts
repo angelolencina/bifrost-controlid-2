@@ -17,6 +17,8 @@ type TSearchBookings = {
   _bookings?: any[];
 };
 
+const SYSTEM = 'deskbee';
+
 @Injectable()
 export class DeskbeeService {
   private readonly logger = new Logger(DeskbeeService.name);
@@ -132,7 +134,7 @@ export class DeskbeeService {
     if (!account) throw new Error('Account not found');
     const config = await this.configRepository.findOne({
       where: {
-        account: account.code,
+        system: SYSTEM,
       },
     });
     if (!config) {
@@ -150,10 +152,9 @@ export class DeskbeeService {
     }
 
     return getBearerToken(credential).then(async (res) => {
-      const [account] = await this.accountRepository.find();
-      if (!account) throw new Error('Account not found');
+      this.logger.log(`New deskbee token generated`);
       await this.configRepository.update(
-        { account: account.code },
+        { system: SYSTEM },
         {
           token: res.access_token,
           token_expires_in: new Date(
@@ -170,7 +171,7 @@ export class DeskbeeService {
     const [account] = await this.accountRepository.find();
     if (!account) throw new Error('Account not found');
     return this.configRepository.save({
-      account: account.code,
+      system: SYSTEM,
       credential: this.getEnvCredential(),
     });
   }

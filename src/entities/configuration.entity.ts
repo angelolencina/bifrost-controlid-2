@@ -18,7 +18,7 @@ export class ConfigurationEntity {
 
   @Column()
   @Index({ unique: true })
-  account: string;
+  system: string;
 
   @Column({ nullable: true })
   token?: string;

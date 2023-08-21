@@ -5,9 +5,6 @@ const headers = { 'Content-Type': `application/json; charset=UTF-8` };
 export const apiDeskbee = axios.create({
   baseURL,
   headers,
-  httpsAgent: new https.Agent({
-    rejectUnauthorized: false,
-  }),
 });
 type TBody = {
   grant_type: string;

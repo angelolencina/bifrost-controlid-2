@@ -31,14 +31,6 @@ export class AppService {
     );
   }
 
-  async getConfigCredential(): Promise<any> {
-    return this.configRepository.findOne({
-      where: {
-        account: this.account,
-      },
-    });
-  }
-
   async getToken() {
     return this.deskbeeService.getToken();
   }
@@ -48,15 +40,15 @@ export class AppService {
     const existingIntegration = await this.accountRepo.findOne({
       where: { integration: Not('null') },
     });
-    const newAccount = AccountFactory.createAccount(account);
+    const newAccount = AccountFactory.createAccount(account).toJson();
     if (existingIntegration) {
       const { integration } = existingIntegration;
-      await this.accountRepo.update(existingIntegration.id, { integration });
+      await this.accountRepo.update(existingIntegration.id, newAccount);
       return this.accountRepo.findOne({
         where: { id: existingIntegration.id },
       });
     }
-    await this.accountRepo.upsert([newAccount.toJson()], ['code']);
+    await this.accountRepo.upsert([newAccount], ['code']);
     return this.accountRepo.findOne({
       where: { integration: Not('null') },
     });

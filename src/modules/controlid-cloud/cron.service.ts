@@ -8,30 +8,29 @@ import { EntranceDto } from '../../dto/entrance.dto';
 import { EntranceLogEntity } from '../../entities/entrance-log.entity';
 import { addDaysToDate } from '../../utils/add-days-to-date';
 import { DeskbeeService } from '../../deskbee/deskbee.service';
-import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-options.constant';
-import ControlidRepository from './database/repositories/controlid.repository';
-import { ApiControlid } from './api/controlid.api';
+import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-cloud-options.constant';
+import { ApiControlidCloud } from './api/controlid.api';
 import { CheckInDto } from '../../dto/checkin.dto';
 import { PersonalBadgeEntity } from '../../entities/personal-badge.entity';
 import { setDateToLocal } from '../../utils/set-date-to-local.util';
 import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date';
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
-import { ControlidOnPremiseDto } from './dto/controlid-on-premise-request.dto';
+import { ControlidCloudDto } from './dto/controlid-cloud-request.dto';
+import { TLog } from './dto/log.type';
 
 @Injectable()
 export class CronService {
   public logger = new Logger('controlid-cron-service');
   constructor(
-    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidOnPremiseDto,
+    @Inject(CONTROLID_CONFIG_OPTIONS) private options: ControlidCloudDto,
     private readonly deskbeeService: DeskbeeService,
-    private readonly apiControlid: ApiControlid,
+    private readonly apiControlid: ApiControlidCloud,
     private schedulerRegistry: SchedulerRegistry,
-    private readonly controlidRepository: ControlidRepository,
     @InjectRepository(BookingEntity)
     private bookingRepository: Repository<BookingEntity>,
     @InjectRepository(EntranceLogEntity)
-    private entranceRepository: Repository<EntranceLogEntity>,
+    private entranceRepo: Repository<EntranceLogEntity>,
     @InjectRepository(PersonalBadgeEntity)
     private personalBadgeRepository: Repository<PersonalBadgeEntity>,
   ) {
@@ -42,7 +41,7 @@ export class CronService {
     const { accessControlByLimit, automatedCheckIn, genQrCode, isActive } =
       this.options;
     if (isActive) {
-      this.logger.log('Controlid on premise is active');
+      this.logger.verbose('Controlid cloud is active');
       if (accessControlByLimit) {
         this.addCronJob('accessControl', '*/30');
         this.addCronJob('getBookingsToCurrentDay', '*/30');
@@ -67,15 +66,17 @@ export class CronService {
       this.logger.warn(
         `job ${name} added for each minute at ${seconds} seconds!`,
       );
+    }
 
-      const job2 = new CronJob(`*/50 * * * * *`, () => {
+    if (name === 'getBookingsToCurrentDay') {
+      const job = new CronJob(`*/50 * * * * *`, () => {
         this.searchBookingsToCurrentDay();
         this.logger.warn(
           `time each minute for job checkingBookingsToCurrentDay to run!`,
         );
       });
-      this.schedulerRegistry.addCronJob('checkingBookingsToCurrentDay', job2);
-      job2.start();
+      this.schedulerRegistry.addCronJob('checkingBookingsToCurrentDay', job);
+      job.start();
       this.logger.warn(
         `job checkingBookingsToCurrentDay added for each minute`,
       );
@@ -107,22 +108,53 @@ export class CronService {
   }
 
   async automateCheckIn() {
-    const passLogs = await this.controlidRepository.getUserPassLogs();
-    const logs = passLogs.map((log: any) => new EntranceDto(log));
-    this.logger.log(`Automated check in for ${logs.length} users`);
-    for (const log of logs) {
-      await this.saveEntranceLog(log);
+    const passLogs = await this.apiControlid.getUserPassLogs();
+    const logs = [];
+    for (const log of passLogs) {
+      const exists = await this.entranceRepo.exist({
+        where: {
+          log_id: log.id,
+        },
+      });
+      if (!exists) {
+        const device = await this.apiControlid
+          .getDeviceByName(log.deviceName)
+          .then((res) => res[0]);
+        const user = await this.apiControlid.getUserByName(log.personName);
+
+        if (!device || !user) {
+          this.logger.error(
+            `Device or user not found on controlid ${log.deviceName} - ${log.personName}`,
+          );
+          continue;
+        }
+
+        logs.push(
+          new EntranceDto({
+            email: user.email,
+            idDevice: device.id,
+            deviceName: device.name,
+            createdAt: log.time,
+            logId: log.id,
+          }),
+        );
+      }
     }
+
+    this.logger.log(`Automated check in for ${logs.length} users`);
     const checkIns: CheckInDto[] = logs.map((log: EntranceDto) =>
       log.toCheckInDto(),
     );
     if (checkIns.length > 0) {
       await this.deskbeeService.checkInByUser(checkIns);
     }
+    for (const log of logs) {
+      await this.saveEntranceLog(log);
+    }
   }
 
   async saveEntranceLog(entrance: EntranceDto) {
-    return this.entranceRepository.save(entrance.toJson()).then(() => {
+    return this.entranceRepo.save(entrance.toJson()).then(() => {
       this.logger.log(
         `Entrance ${entrance.email} on device ${entrance?.deviceName}  saved`,
       );
@@ -184,11 +216,11 @@ export class CronService {
   }
 
   async createUserQrCode() {
-    const users = await this.controlidRepository.getLastCreatedUsers();
+    const users = await this.apiControlid.getLastCreatedUsers();
     this.logger.log(`Creating ${users.length} qr codes`);
     for (const user of users) {
       const code = await this.apiControlid.createUserQrCode(user.id);
-      await this.controlidRepository.saveUserCard(user.id, code);
+      //await this.controlidRepository.saveUserCard(user.id, code);
       this.logger.log(`Qr code created for user ${user.email} code: ${code}`);
       const newBadge = this.personalBadgeRepository.create({
         code,
@@ -283,7 +315,7 @@ export class CronService {
   async grantUserAccessToday(email: string, start: Date, end: Date) {
     this.logger.log(`Granting access today for ${email}`);
     try {
-      await this.controlidRepository.grantAccessToToday(email, start, end);
+      await this.apiControlid.grantAccessToToday(email, start, end);
       this.apiControlid.syncAll();
     } catch (error) {
       this.logger.error(`Error on grant access to ${email} => ${error}`);
@@ -293,7 +325,7 @@ export class CronService {
   async revokeUserAccess(email: string) {
     this.logger.log(`Revoke access to last day for ${email}`);
     try {
-      await this.controlidRepository.revokeUserAccess(email);
+      await this.apiControlid.revokeUserAccess(email);
       this.apiControlid.syncAll();
     } catch (error) {
       this.logger.error(`Error on revoke access to ${email} => ${error}`);

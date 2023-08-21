@@ -4,30 +4,36 @@ type EntranceProps = {
   email: string;
   idDevice: number;
   deviceName: string;
-  reader: number;
-  idArea: number;
-  area: string;
-  event: number;
+  logId: number;
+  reader?: number;
+  idArea?: number;
+  area?: string;
+  event?: string;
+  event_description?: string;
   createdAt: string;
 };
 export class EntranceDto {
   #email: string;
   #id_device: number;
+  #log_id: number;
   #device_name: string;
-  #reader: number;
-  #id_area: number;
-  #area: string;
-  #event: number;
-  #created_at: string;
+  #reader?: number;
+  #id_area?: number;
+  #area?: string;
+  #event?: string;
+  #event_description?: string;
+  #created_at: Date;
   constructor(props: EntranceProps) {
     this.#email = props.email;
     this.#id_device = props.idDevice;
+    this.#log_id = props.logId;
     this.#device_name = props.deviceName;
     this.#reader = props.reader;
     this.#id_area = props.idArea;
     this.#area = props.area;
     this.#event = props.event;
-    this.#created_at = props.createdAt;
+    this.#event_description = props.event_description;
+    this.#created_at = new Date(props.createdAt);
   }
   get email(): string {
     return this.#email;
@@ -35,22 +41,28 @@ export class EntranceDto {
   get idDevice(): number {
     return this.#id_device;
   }
+  get logId(): number {
+    return this.#log_id;
+  }
   get deviceName(): string {
     return this.#device_name;
   }
-  get reader(): number {
+  get reader(): number | undefined {
     return this.#reader;
   }
-  get idArea(): number {
+  get idArea(): number | undefined {
     return this.#id_area;
   }
-  get area(): string {
+  get area(): string | undefined {
     return this.#area;
   }
-  get event(): number {
+  get event(): string | undefined {
     return this.#event;
   }
-  get createdAt(): string {
+  get eventDescription(): string | undefined {
+    return this.#event_description;
+  }
+  get createdAt(): Date {
     return this.#created_at;
   }
 
@@ -58,6 +70,7 @@ export class EntranceDto {
     return {
       email: this.email,
       id_device: this.idDevice,
+      log_id: this.logId,
       device_name: this.deviceName,
       reader: this.reader,
       id_area: this.idArea,
@@ -71,7 +84,7 @@ export class EntranceDto {
     return {
       device: this.idDevice,
       person: this.email,
-      date: formatDateString(this.createdAt),
+      date: formatDateString(this.createdAt.toISOString()),
       entrance: 1,
     };
   }

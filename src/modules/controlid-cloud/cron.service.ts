@@ -17,7 +17,6 @@ import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date'
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
 import { ControlidCloudDto } from './dto/controlid-cloud-request.dto';
-import { TLog } from './dto/log.type';
 
 @Injectable()
 export class CronService {

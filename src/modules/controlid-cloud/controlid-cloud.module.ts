@@ -12,6 +12,7 @@ import { ApiControlidCloud } from './api/controlid.api';
 import { ControlidCloudService } from './controlid-cloud.service';
 import { CronService } from './cron.service';
 import { CONTROLID_CONFIG_OPTIONS } from './constants/controlid-cloud-options.constant';
+import { SettingsEntity } from '../../entities/settings.entity';
 
 @Module({})
 export class ControlidCloudModule {
@@ -25,6 +26,7 @@ export class ControlidCloudModule {
           EntranceLogEntity,
           BookingEntity,
           PersonalBadgeEntity,
+          SettingsEntity,
         ]),
         DeskbeeModule,
       ],

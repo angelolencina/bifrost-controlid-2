@@ -17,6 +17,10 @@ import { subtractMinutesFromDate } from '../../utils/subtract-minutes-from-date'
 import { addMinutesFromDate } from '../../utils/add-minutes-from-date';
 import { isToday } from '../../utils/is-today.util';
 import { ControlidCloudDto } from './dto/controlid-cloud-request.dto';
+import { SettingsEntity } from '../../entities/settings.entity';
+import { CardType } from './constants/card-type.enum';
+import { createReadableCode } from './utils/create-readble-code';
+import { generateCardNumber } from './utils/generate-card-number';
 
 @Injectable()
 export class CronService {
@@ -32,6 +36,8 @@ export class CronService {
     private entranceRepo: Repository<EntranceLogEntity>,
     @InjectRepository(PersonalBadgeEntity)
     private personalBadgeRepository: Repository<PersonalBadgeEntity>,
+    @InjectRepository(SettingsEntity)
+    private settingsRepo: Repository<SettingsEntity>,
   ) {
     this.init();
   }
@@ -216,18 +222,51 @@ export class CronService {
 
   async createUserQrCode() {
     const users = await this.apiControlid.getLastCreatedUsers();
-    this.logger.log(`Creating ${users.length} qr codes`);
-    for (const user of users) {
-      const code = await this.apiControlid.createUserQrCode(user.id);
-      //await this.controlidRepository.saveUserCard(user.id, code);
-      this.logger.log(`Qr code created for user ${user.email} code: ${code}`);
-      const newBadge = this.personalBadgeRepository.create({
-        code,
-        email: user.email,
-      });
-      this.personalBadgeRepository.save(newBadge);
+    const lastCreatedUser = await this.settingsRepo
+      .findOne({
+        where: { name: 'lastCreatedUser' },
+      })
+      .then((res) => (res?.value ? new Date(res.value) : null));
+    const filterUsers = users.filter((user: any) => {
+      const userCreated = new Date(user.createdAt);
+      if (lastCreatedUser) {
+        return userCreated > lastCreatedUser;
+      }
+      return true;
+    });
+    this.logger.log(`Creating ${filterUsers.length} qr codes`);
+    for (const user of filterUsers) {
+      const userCreated = new Date(user.createdAt);
+      const personCards = user.personCard.filter(
+        (card: any) => card.type === CardType.QRCODE,
+      );
+      if (
+        (lastCreatedUser && userCreated > lastCreatedUser) ||
+        personCards.length === 0
+      ) {
+        const cardNumber = generateCardNumber();
+        const readableCode = createReadableCode(cardNumber);
+        user.personCard.push({
+          type: CardType.QRCODE,
+          cardNumber: cardNumber,
+          readableCode,
+        });
+        this.apiControlid.savePersonCard(user);
+        const newBadge = this.personalBadgeRepository.create({
+          code: cardNumber.toString(),
+          email: user.email,
+        });
+        this.personalBadgeRepository.save(newBadge);
+      }
     }
-    this.sendPersonalBadge();
+    this.settingsRepo.upsert(
+      {
+        name: 'lastCreatedUser',
+        value: users.length ? users[0].createdAt : new Date().toISOString(),
+      },
+      ['name'],
+    ),
+      this.sendPersonalBadge();
   }
 
   async sendPersonalBadge() {

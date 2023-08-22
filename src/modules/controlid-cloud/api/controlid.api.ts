@@ -73,14 +73,24 @@ export class ApiControlidCloud implements ControlidApiInterface {
   }
 
   getLastCreatedUsers() {
+    const url = `/persons?sortField=CreatedAt&sortOrder=desc&pagesize=50`;
     return this.api
-      .get(`/persons`)
-      .then((res) => res.data)
+      .get(url)
+      .then((res) => res.data?.data?.data)
       .catch((e) => {
         this.logger.error(`erro to get last created users ${e?.message}`);
 
         throw new Error(`erro to get last created users ${e?.message}`);
       });
+  }
+
+  savePersonCard(user: any) {
+    const url = `/persons`;
+    return this.api.put(url, user).catch((e) => {
+      this.logger.error(`erro to save person card ${e?.message}`);
+
+      throw new Error(`erro to save person card ${e?.message}`);
+    });
   }
 
   async grantAccessToToday(email: string, startDate: Date, endDate: Date) {
